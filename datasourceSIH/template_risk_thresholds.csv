@@ -1,0 +1,4 @@
+hazard_type,risk_factor,threshold_low,threshold_high,source_citation,notes
+land_subsidence,deforestation_pct,,,,"Search GSI/NDMA reports or Google Scholar for 'Himalayan slope deforestation subsidence/landslide correlation'"
+land_subsidence,rainfall_3day_cumulative_mm,,,,
+land_subsidence,construction_density_increase_pct,,,,

@@ -1,0 +1,2 @@
+district,date,rainfall_mm,is_live,source,notes
+Chamoli,,,true,,"Pulled live via OpenWeather or NASA POWER API during demo"

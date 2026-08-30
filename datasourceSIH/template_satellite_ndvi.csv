@@ -1,0 +1,5 @@
+location_id,date,ndvi_avg,forest_cover_pct,built_up_area_pct,source_image_id,notes
+joshimath_core,,,,,,"e.g. Sentinel-2 tile ID, pull via Google Earth Engine"
+joshimath_core,,,,,,
+joshimath_core,,,,,,
+joshimath_6km_radius,,,,,,
