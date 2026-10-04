@@ -17,6 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "ml"))
 import ef_predict
 import generic
+import ai4i_predict
 from ef_data import STATIC
 
 MIME = {".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
@@ -113,6 +114,8 @@ class H(BaseHTTPRequestHandler):
                                    for i, r in FT.iterrows()])
         if u.path in ("/healthz", "/api/health"):
             return self.send(200, {"ok": True})
+        if u.path == "/api/ai4i/results":
+            return self.send(200, open(os.path.join(ROOT, "ml", "ai4i_results.json"), "rb").read())
         if u.path == "/api/horizons":
             return self.send(200, open(os.path.join(ROOT, "ml", "ef_horizons.json"), "rb").read())
         if u.path == "/api/external":
@@ -136,6 +139,8 @@ class H(BaseHTTPRequestHandler):
         path = urlparse(self.path).path
         if path.startswith("/api/generic/"):
             return self.generic(path.rsplit("/", 1)[-1])
+        if path in ("/api/ai4i/predict", "/api/ai4i/machine"):
+            return self.ai4i(path.rsplit("/", 1)[-1])
         if path == "/api/whatif":
             try:
                 n = int(self.headers.get("Content-Length", 0))
@@ -167,6 +172,29 @@ class H(BaseHTTPRequestHandler):
         except (ValueError, KeyError, pd.errors.ParserError) as e:
             self.send(400, {"error": str(e)})
         except Exception as e:  # never drop the connection: report it to the page instead
+            self.send(500, {"error": f"unexpected error: {type(e).__name__}: {e}"})
+
+    def ai4i(self, action):
+        """Machine module (AI4I 2020): one machine from the form, or a CSV of unseen machines."""
+        try:
+            n = int(self.headers.get("Content-Length", 0))
+            if n > MAX_BYTES:
+                return self.send(413, {"error": "file too large (limit 5 MB)"})
+            body = json.loads(self.rfile.read(n))
+            if action == "machine":
+                m = body["machine"]
+                df = pd.DataFrame([{"Type": m["type"], "Air temperature [K]": m["air"], "Process temperature [K]": m["process"],
+                                    "Rotational speed [rpm]": m["rpm"], "Torque [Nm]": m["torque"], "Tool wear [min]": m["wear"]}])
+                return self.send(200, ai4i_predict.predict(df, curves=True))
+            df, renamed = ai4i_predict.read(body["csv"])
+            out = ai4i_predict.predict(df)
+            out["renamed"] = renamed
+            out["csv"] = ai4i_predict.to_csv(out)
+            out["rows"] = out["rows"][:500]
+            return self.send(200, out)
+        except (ValueError, KeyError, TypeError, pd.errors.ParserError, pd.errors.EmptyDataError) as e:
+            self.send(400, {"error": str(e)})
+        except Exception as e:  # never drop the connection
             self.send(500, {"error": f"unexpected error: {type(e).__name__}: {e}"})
 
     def generic(self, action):
@@ -209,6 +237,7 @@ if __name__ == "__main__":
     # so the first visitor does not wait ~10 s for lazy model loading
     for h in ef_predict.HORIZONS:
         ef_predict.load_model(h)
+    ai4i_predict.bundle()
     try:
         ef_predict.predict_row(BASE["wayanad|7"], 72)
     except Exception as e:  # never block startup on the warm-up

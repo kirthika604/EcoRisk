@@ -328,6 +328,24 @@
   .cm .good { background: rgba(85,161,85,.16); } .cm .bad { background: rgba(200,66,63,.12); }
   .cm b { display: block; font-size: 20px; }
 
+  .mgrid { display: grid; grid-template-columns: minmax(250px, 300px) minmax(0, 1fr); gap: 16px; }
+  @media (max-width: 900px) { .mgrid { grid-template-columns: minmax(0, 1fr); } }
+  .mform { padding: 14px; align-self: start; }
+  .mpia { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  @media (max-width: 1100px) { .mpia { grid-template-columns: minmax(0, 1fr); } }
+  .mode-row { display: grid; grid-template-columns: 112px 1fr 38px; gap: 6px; align-items: center; font-size: 11px; margin-top: 3px; }
+  .mode-row .bar { height: 6px; background: var(--track); border-radius: 3px; position: relative; overflow: hidden; }
+  .mode-row .bar i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 3px; }
+  .actual { margin-top: 6px; font-size: 12px; padding: 6px 8px; border-radius: 6px; background: var(--panel); border: 1px solid var(--panel-border); }
+  .ftable td { font-size: 12px; } .ftable td.r { white-space: normal; min-width: 220px; color: var(--text-dim); }
+  .ftable tr.alert td { background: rgba(200,66,63,.07); }
+  .module-break { margin: 10px 0 0; padding: 22px 24px; border-radius: 10px; background: linear-gradient(90deg, rgba(74,102,112,.18), rgba(85,161,85,.12));
+                  border: 1px solid var(--panel-border); }
+  .module-break span { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--slate-bright); }
+  .module-break p { margin: 4px 0 0; font-size: 15px; color: var(--text); }
+  .curve { margin-bottom: 10px; } .curve .ct { font-size: 12px; color: var(--text-dim); margin-bottom: 2px; }
+  .curve svg { width: 100%; height: 70px; display: block; }
+
   footer { max-width: 1160px; margin: 0 auto; padding: 0 24px 40px; color: var(--text-dim); font-size: 12px; }
 </style>
 </head>
@@ -344,19 +362,22 @@
       <h1>EcoRisk <span>AI</span></h1></span>
       <span class="ps">ALG-DATA-02 &middot; Predict what happens next</span>
     </div>
-    <p class="thesis">Human activity weakens the land. Weather pulls the trigger. <b>EcoRisk AI learns both from 30 years of real satellite and weather data, then predicts what happens next at a site:</b> how fragile the ground is, and whether an extreme-rainfall trigger is coming in the next 24 to 72 hours, and what your operation should do about it.</p>
+    <p class="thesis"><b>EcoRisk AI predicts what happens next, and what to do about it.</b> On the ALG-DATA-02 dataset (AI4I 2020, 10,000 milling machines) it predicts whether a machine will fail, which failure it will be, and how many production runs it has left. The same engine also forecasts extreme-rainfall risk from 30 years of real weather and land data.</p>
     <div class="cta">
-      <a class="primary" href="#decide">Get a decision</a>
-      <a href="#outlook">Check a site</a>
-      <a href="#calc">Try the what-if calculator</a>
-      <a href="#aware">Stay safe</a>
+      <a class="primary" href="#machine">Check a machine</a>
+      <a href="#mfleet">Predict unseen machines</a>
+      <a href="#mmodel">The data and the model</a>
+      <a href="#decide">Environment module</a>
     </div>
     <div class="hero-stats" id="heroStats"></div>
   </div>
 </header>
 <div class="navbar">
   <nav aria-label="Sections" id="nav">
-    <a href="#decide">Decide</a>
+    <a href="#machine">Machine</a>
+    <a href="#mfleet">Unseen machines</a>
+    <a href="#mmodel">Model &amp; data</a>
+    <a href="#decide">Weather decide</a>
     <a href="#outlook">Site outlook</a>
     <a href="#calc">What-if calculator</a>
     <a href="#unseen">Unseen data</a>
@@ -371,9 +392,106 @@
 </div>
 
 <main>
+  <!-- ================= MACHINE MODULE (AI4I 2020) ================= -->
+  <section class="panel" id="machine" aria-labelledby="h-m1">
+    <h2 id="h-m1"><span class="step">1 &middot;</span> Machine failure: Predict &rarr; What happens next &rarr; Act <span class="tag real">Model output</span></h2>
+    <p class="sub">The ALG-DATA-02 dataset: AI4I 2020, 10,000 milling machines. Set a machine's readings, or pick a real held-out machine the model never saw. EcoRisk AI predicts whether it will fail, how, how many production runs it has left, and what to do.</p>
+    <div class="mgrid">
+      <div class="well mform">
+        <div class="chips" id="mPresets" role="group" aria-label="Machine presets"></div>
+        <label class="f" style="margin-bottom:10px">Real held-out machine<select id="mReal"><option value="">Choose one…</option></select></label>
+        <div class="row" style="margin-bottom:6px"><label class="f">Product type<select id="mType"><option value="L">L (low quality, 50%)</option><option value="M">M (medium, 30%)</option><option value="H">H (high, 20%)</option></select></label></div>
+        <div id="mSliders"></div>
+      </div>
+      <div>
+        <div class="pia mpia" aria-live="polite">
+          <div class="well">
+            <div class="step-n">1 &middot; Predict <span class="tag real">Model output</span></div>
+            <div class="q">Will this machine fail?</div>
+            <div class="big" id="mProb">&ndash;</div>
+            <div id="mAlert" style="font-size:13px"></div>
+            <div id="mModes"></div>
+            <div class="note" id="mReason"></div>
+            <div id="mActual"></div>
+          </div>
+          <div class="well">
+            <div class="step-n">2 &middot; What happens next <span class="tag real">Projection</span></div>
+            <div class="q">Each run adds <span id="mInc">2</span> min of tool wear</div>
+            <div class="decision" id="mNext">&ndash;</div>
+            <div class="note" id="mNextD"></div>
+            <svg id="mChart" class="spark" style="height:120px" role="img" aria-label="Failure risk over the next production runs"></svg>
+            <div class="note">Line: failure risk per run ahead &middot; red dashed: alert line &middot; amber: tool enters its 200-240 min wear window</div>
+          </div>
+          <div class="well">
+            <div class="step-n">3 &middot; Act <span class="tag rule">Decision rule</span></div>
+            <div class="q">What should maintenance do?</div>
+            <div class="decision" id="mDecision">&ndash;</div>
+            <ul class="recs" id="mRecs"></ul>
+            <div class="rule" id="mRule"></div>
+          </div>
+        </div>
+        <details class="profile"><summary>Maintenance costs (used for Act, saved in this browser)</summary>
+          <div class="pgrid">
+            <label class="f">Cost of an unplanned failure (₹)<input id="mLoss" type="number" min="0" step="5000" value="200000"></label>
+            <label class="f">Cost of preventive maintenance (₹)<input id="mCost" type="number" min="0" step="1000" value="15000"></label>
+          </div></details>
+        <div class="err" id="mErr" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" id="mfleet" aria-labelledby="h-m2">
+    <h2 id="h-m2"><span class="step">2 &middot;</span> Predict unseen machines <span class="tag live">Live input</span></h2>
+    <p class="sub">Score a whole file of machines in the AI4I format (Type, air and process temperature, rotational speed, torque, tool wear). Renamed columns are matched automatically. If the file also has a "Machine failure" column, EcoRisk AI scores its own predictions against it, ready for a hidden evaluation set.</p>
+    <div class="row">
+      <button type="button" id="fTest">Load the 2,000 held-out test machines</button>
+      <button type="button" class="sec" id="fTestAns">Same machines, with answers (self-score)</button>
+      <label class="f">or upload a CSV<input id="fFile" type="file" accept=".csv,text/csv"></label>
+      <button type="button" class="sec hide" id="fDownload">Download predictions CSV</button>
+    </div>
+    <div class="err" id="fErr" role="alert"></div>
+    <div class="stats" id="fStats" style="margin-top:14px"></div>
+    <p class="note" id="fNote"></p>
+    <div style="overflow-x:auto"><table class="ftable"><thead id="fHead"></thead><tbody id="fRows"></tbody></table></div>
+  </section>
+
+  <section class="panel" id="mmodel" aria-labelledby="h-m3">
+    <h2 id="h-m3"><span class="step">3 &middot;</span> The data and the model <span class="tag real">Real pipeline</span></h2>
+    <p class="sub">Every step of the ALG-DATA-02 brief, on AI4I 2020. The 20% test set (2,000 machines) was set aside first and used only once, at the very end.</p>
+    <div class="pipe" id="mPipe"></div>
+    <div class="cols" style="margin-top:18px">
+      <div>
+        <h3 class="t">Exploration: what the data looks like</h3>
+        <div class="stats" id="mEda"></div>
+        <h3 class="t" style="margin-top:6px">Failure rate across the key drivers</h3>
+        <div id="mCurves"></div>
+      </div>
+      <div>
+        <h3 class="t">Cleaning, IDs and leakage</h3>
+        <ul class="why-list" id="mClean"></ul>
+        <h3 class="t" style="margin-top:14px">Engineered features (from the documented failure mechanisms)</h3>
+        <ul class="why-list" id="mFeat"></ul>
+        <h3 class="t" style="margin-top:14px">Model selection: 5-fold cross-validation on the training set</h3>
+        <div style="overflow-x:auto"><table><thead><tr><th>Model</th><th>Features</th><th>CV PR-AUC</th><th>CV ROC-AUC</th></tr></thead><tbody id="mCv"></tbody></table></div>
+      </div>
+    </div>
+    <h3 class="t" style="margin-top:18px">Held-out test: 2,000 machines the model never saw</h3>
+    <div class="stats" id="mTest"></div>
+    <div class="cols">
+      <div><h3 class="t">Confusion matrix</h3><div id="mCm"></div><p class="note" id="mMiss"></p></div>
+      <div>
+        <h3 class="t">What drives the prediction</h3><div id="mDrivers"></div>
+        <h3 class="t" style="margin-top:14px">Failure type models (test)</h3>
+        <div style="overflow-x:auto"><table><thead><tr><th>Failure type</th><th>Test cases</th><th>PR-AUC</th><th>ROC-AUC</th></tr></thead><tbody id="mModeTab"></tbody></table></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="module-break" id="envModule"><span>Module 2 &middot; Environment</span><p>The same predict-what-happens-next engine on real-world environmental data: weather and land change across India.</p></div>
+
   <!-- ================= DECISION CENTER ================= -->
   <section class="panel" id="decide" aria-labelledby="h-dc">
-    <h2 id="h-dc"><span class="step">1 &middot;</span> Predict &rarr; Impact &rarr; Act</h2>
+    <h2 id="h-dc"><span class="step">4 &middot;</span> Weather risk: Predict &rarr; Impact &rarr; Act</h2>
     <p class="sub">What is likely to happen next, what it means for your operation, and what to do about it. Pick a location, a date to replay and a prediction window. Tell EcoRisk AI about your operation once, below.</p>
     <div class="dc-controls">
       <label class="f">Location<select id="dSite" aria-label="Location"></select></label>
@@ -430,7 +548,7 @@
 
   <!-- ================= SITE OUTLOOK ================= -->
   <section class="panel" id="outlook" aria-labelledby="h-out">
-    <h2 id="h-out"><span class="step">2 &middot;</span> Site outlook <span class="tag real">Model output</span></h2>
+    <h2 id="h-out"><span class="step">5 &middot;</span> Site outlook <span class="tag real">Model output</span></h2>
     <p class="sub">Pick a site on the map, then replay any date. Both models only see data up to that day. The default replays the day before each recorded disaster that falls in the held-out test years (2022&ndash;2025).</p>
     <div class="outlook">
       <div>
@@ -503,7 +621,7 @@
 
   <!-- ================= CALCULATOR ================= -->
   <section class="panel" id="calc" aria-labelledby="h-calc">
-    <h2 id="h-calc"><span class="step">3 &middot;</span> What-if calculator <span class="tag real">Real trained models</span></h2>
+    <h2 id="h-calc"><span class="step">6 &middot;</span> What-if calculator <span class="tag real">Real trained models</span></h2>
     <p class="sub">Move the sliders and watch both trained models respond instantly. Start from a real site's typical day for the chosen month, then ask: what if a cloudburst hits? What if the hillside loses its forest? Sliders stay inside the range seen in the training data, so the model is never pushed into territory it never learned.</p>
     <div class="row" style="margin-bottom:14px">
       <label class="f">Start from site<select id="cSite"></select></label>
@@ -540,7 +658,7 @@
 
   <!-- ================= UNSEEN ================= -->
   <section class="panel" id="unseen" aria-labelledby="h-un">
-    <h2 id="h-un"><span class="step">4 &middot;</span> Predict on unseen data <span class="tag live">Live input</span></h2>
+    <h2 id="h-un"><span class="step">7 &middot;</span> Predict on unseen weather data <span class="tag live">Live input</span></h2>
     <p class="sub">Give EcoRisk AI a weather record it has never seen: at least 31 consecutive days of date, rainfall, temperature, humidity, pressure and wind. Common column names (rainfall, temp, humidity, pressure in hPa or kPa) are mapped automatically, and missing dew point is derived. The result appears in the Site outlook above.</p>
     <div class="unseen">
       <div>
@@ -571,7 +689,7 @@
 
   <!-- ================= ANY DATASET ================= -->
   <section class="panel" id="byod" aria-labelledby="h-byod">
-    <h2 id="h-byod"><span class="step">5 &middot;</span> Any dataset: bring your own <span class="tag live">Live input</span></h2>
+    <h2 id="h-byod"><span class="step">8 &middot;</span> Any dataset: bring your own <span class="tag live">Live input</span></h2>
     <p class="sub">The same predict-what-happens-next pipeline works on any table, not just weather. Load a CSV, choose what to predict, and EcoRisk AI cleans it, engineers features, compares models on a validation split, reports honest test metrics, and predicts on new rows. Try it with the AI4I 2020 predictive-maintenance dataset (machine failures).</p>
     <div class="row">
       <button type="button" id="gSample">Try AI4I 2020 (machine failures)</button>
@@ -624,7 +742,7 @@
 
   <!-- ================= AWARENESS ================= -->
   <section class="panel" id="aware" aria-labelledby="h-aw">
-    <h2 id="h-aw"><span class="step">6 &middot;</span> Stay safe: turn a prediction into action <span class="tag live">Follows your outlook</span></h2>
+    <h2 id="h-aw"><span class="step">9 &middot;</span> Stay safe: turn a prediction into action <span class="tag live">Follows your outlook</span></h2>
     <p class="sub">A prediction only matters if someone acts on it. The level that matches the latest outlook above is highlighted. Always follow official warnings from IMD, NDMA and your district administration first.</p>
     <div class="levels" id="levels">
       <div class="well lvl g" data-l="0"><h4>Normal <span class="you">Current outlook</span></h4><p>No flag from either model.</p>
@@ -655,14 +773,14 @@
 
   <!-- ================= HOW ================= -->
   <section class="panel" id="how" aria-labelledby="h-how">
-    <h2 id="h-how"><span class="step">7 &middot;</span> How EcoRisk AI predicts <span class="tag real">Real pipeline</span></h2>
+    <h2 id="h-how"><span class="step">10 &middot;</span> How the weather model predicts <span class="tag real">Real pipeline</span></h2>
     <p class="sub">Two models answer two questions. The outlook combines them with a fixed, published rule.</p>
     <div class="pipe" id="pipe"></div>
   </section>
 
   <!-- ================= VALIDATION ================= -->
   <section class="panel" id="validation" aria-labelledby="h-val">
-    <h2 id="h-val"><span class="step">8 &middot;</span> Validation <span class="tag real">Real, reported honestly</span></h2>
+    <h2 id="h-val"><span class="step">11 &middot;</span> Weather model validation <span class="tag real">Real, reported honestly</span></h2>
     <p class="sub">The 72 h model is trained on 1995&ndash;2018, tuned on 2019&ndash;2021, and scored once on 2022&ndash;2025, data it never saw. The structural model is scored leave-one-site-out.</p>
     <div class="stats" id="stats"></div>
     <div class="cols">
@@ -692,7 +810,7 @@
   </section>
 
   <section class="panel" aria-labelledby="h-lim">
-    <h2 id="h-lim"><span class="step">9 &middot;</span> Honest limits</h2>
+    <h2 id="h-lim"><span class="step">12 &middot;</span> Honest limits</h2>
     <ul class="limits" id="limits"></ul>
   </section>
 </main>
@@ -915,7 +1033,11 @@ function fillStatic() {
   $("fi").innerHTML = fi.map(([k, v]) => `<div class="fi"><span>${nice(k)}</span><div class="bar"><i style="left:${v < 0 ? 50 - Math.abs(v) / mx * 50 : 50}%;width:${Math.abs(v) / mx * 50}%;background:${v < 0 ? "var(--ok)" : "var(--danger)"}"></i><u></u></div><span class="num">${v > 0 ? "+" : ""}${v.toFixed(2)}</span></div>`).join("");
   const pi = res.permutation_importance_pr_auc_drop.slice(0, 7), pm = pi[0].drop;
   $("pi").innerHTML = pi.map(p => `<div class="fi"><span>${nice(p.feature)}</span><div class="bar"><i style="left:0;width:${Math.max(0, p.drop) / pm * 100}%;background:var(--accent)"></i></div><span class="num">${p.drop.toFixed(3)}</span></div>`).join("");
+  const at = M.res?.test;
   $("limits").innerHTML = [
+    `<b>AI4I 2020 is synthetic.</b> UCI describes it as a synthetic dataset that reflects real predictive-maintenance data. The pipeline is built to transfer, but real machines would need their own validation.`,
+    at ? `<b>Machine misses are mostly tool-wear failures.</b> ${at.missed_by_mode.TWF} of ${at.confusion.fn} missed failures; those happen at a random point between 200 and 240 min, so EcoRisk AI flags the wear window instead of pretending to time them.` : "",
+    
     `<b>Most alerts are false alarms.</b> Alert precision is ${pct(c.precision)}, recall ${pct(c.recall)}. EcoRisk AI is a screening tool that narrows where to look, not a siren.`,
     `<b>The 72 h model predicts extreme rain, not the disaster itself.</b> Disasters are rare (one recorded per site), so recorded events are used as a backtest, not as training labels.`,
     `<b>Non-rain disasters are invisible to the 72 h model.</b> Joshimath (subsidence) was missed. Its structural score still flags the land.`,
@@ -924,7 +1046,7 @@ function fillStatic() {
     `<b>Other data sources need history.</b> On unseen places with ERA5 data the raw model ranks days well but over-states probabilities about 3×. With 5+ years of the source's own history, EcoRisk AI recalibrates automatically and the probabilities become honest again. Short files from other sources get a warning.`,
     `<b>Record-breaking weather is an extrapolation.</b> Some disasters (Jakhau, Guna, Silchar) came with rain, wind or pressure beyond anything in training. The model still alerted, and it can only extrapolate upward with more rain, but such forecasts are marked "beyond the model's experience".`,
     `<b>Calibration is close, not perfect.</b> Mid-range probabilities slightly under-state the observed rate. Above 40% they over-state it.`
-  ].map(x => `<li>${x}</li>`).join("");
+  ].filter(Boolean).map(x => `<li>${x}</li>`).join("");
 }
 
 /* ---------- unseen ---------- */
@@ -1247,9 +1369,10 @@ function navSpy() {
   addEventListener("resize", update); update();
 }
 function heroStats() {
-  const res = S.res, ev = res.recorded_event_backtest;
-  $("heroStats").innerHTML = [[S.sites.length, "sites across India"], ["30 yrs", "of daily weather"], [(res.n_train + res.n_val + res.n_test).toLocaleString(), "site-days learned from"],
-    [`${ev.filter(e => e.alert_raised).length}/${ev.length}`, "recent disasters flagged in advance"]].map(([b, t]) => `<div><b>${b}</b>${t}</div>`).join("");
+  const t = M.res?.test;
+  $("heroStats").innerHTML = (t ? [["10,000", "machines in AI4I 2020"], [`${t.confusion.tp}/${t.test_failures}`, "failures caught on unseen machines"],
+    [t.confusion.fp, "false alarms in 2,000 machines"], [t.pr_auc.toFixed(2), `PR-AUC (baseline ${t.baseline_pr_auc.toFixed(2)})`]] : [])
+    .map(([b, x]) => `<div><b>${b}</b>${x}</div>`).join("");
 }
 
 
@@ -1507,12 +1630,168 @@ $("gDownload").onclick = () => {
   a.download = "ecorisk_predictions.csv"; document.body.appendChild(a); a.click(); a.remove();
 };
 
+
+/* ================= MACHINE MODULE (AI4I 2020) ================= */
+const M = { res: null, m: { type: "L", air: 298.5, process: 309.0, rpm: 1500, torque: 40, wear: 60 }, timer: null, seq: 0, real: [], actual: null, fleetCsv: "" };
+const MDEFS = [
+  { k: "m_air", f: "air", l: "Air temperature", min: 295, max: 305, step: 0.1, u: " K" },
+  { k: "m_process", f: "process", l: "Process temperature", min: 305, max: 314, step: 0.1, u: " K" },
+  { k: "m_rpm", f: "rpm", l: "Rotational speed", min: 1150, max: 2900, step: 10, u: " rpm" },
+  { k: "m_torque", f: "torque", l: "Torque", min: 3, max: 77, step: 0.5, u: " Nm" },
+  { k: "m_wear", f: "wear", l: "Tool wear", min: 0, max: 253, step: 1, u: " min" }];
+const MPRESETS = [
+  ["Healthy", { type: "L", air: 298.5, process: 309.0, rpm: 1500, torque: 40, wear: 60 }],
+  ["Worn tool", { type: "L", air: 298.5, process: 309.0, rpm: 1500, torque: 40, wear: 215 }],
+  ["Poor cooling", { type: "L", air: 302.5, process: 310.6, rpm: 1330, torque: 50, wear: 80 }],
+  ["Power overload", { type: "M", air: 299.0, process: 310.0, rpm: 1250, torque: 70, wear: 90 }],
+  ["Overstrain", { type: "L", air: 298.5, process: 309.5, rpm: 1400, torque: 60, wear: 195 }]];
+const MODE_LABEL = { TWF: "tool wear", HDF: "heat dissipation", PWF: "power", OSF: "overstrain" };
+const MKEY = "ecorisk.mcost.v1";
+function mCosts() { return { loss: Math.max(0, +$("mLoss").value || 0), cost: Math.max(0, +$("mCost").value || 0) }; }
+function mBuild() {
+  $("mPresets").innerHTML = MPRESETS.map((p, i) => `<button type="button" class="chip${i ? "" : " on"}" data-i="${i}">${p[0]}</button>`).join("");
+  $("mPresets").onclick = (e) => { const b = e.target.closest(".chip"); if (!b) return; chipOn("mPresets", b); M.actual = null; $("mReal").value = ""; mSet(MPRESETS[+b.dataset.i][1]); };
+  MDEFS.forEach(d => slider($("mSliders"), d, M.m[d.f], (k, v) => { M.m[d.f] = v; M.actual = null; $("mReal").value = ""; chipOn("mPresets", null); mQueue(); }));
+  $("mType").onchange = () => { M.m.type = $("mType").value; M.actual = null; chipOn("mPresets", null); mQueue(); };
+  try { const c = JSON.parse(localStorage.getItem(MKEY) || "null"); if (c) { $("mLoss").value = c.loss; $("mCost").value = c.cost; } } catch { /* no storage */ }
+  for (const id of ["mLoss", "mCost"]) $(id).addEventListener("input", () => { try { localStorage.setItem(MKEY, JSON.stringify(mCosts())); } catch { } if (M.last) mRender(M.last); });
+  $("mReal").onchange = () => { const r = M.real[+$("mReal").value]; if (!r) return; chipOn("mPresets", null); M.actual = r.actual; mSet(r.m); };
+}
+function mSet(m) { M.m = { ...m }; $("mType").value = m.type; MDEFS.forEach(d => d.set(m[d.f])); mQueue(0); }
+function mQueue(ms = 120) { clearTimeout(M.timer); M.timer = setTimeout(mPredict, ms); }
+async function mPredict() {
+  const seq = ++M.seq; $("mErr").textContent = "";
+  try {
+    const d = await j("/api/ai4i/machine", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ machine: M.m }) });
+    if (seq === M.seq) { M.last = d; mRender(d); }
+  } catch (e) { $("mErr").textContent = friendly(e.message); }
+}
+function mRender(d) {
+  const r = d.rows[0], thr = d.threshold, p = r.failure_probability, inc = { L: 2, M: 3, H: 5 }[r.type];
+  $("mProb").innerHTML = `<span style="color:${r.alert ? "var(--danger)" : "var(--text)"}">${pct(p, p < 0.1 ? 1 : 0)}</span> <span style="font-size:13px;font-weight:700;color:${r.alert ? "var(--danger)" : "var(--text-dim)"}">${r.alert ? "FAILURE ALERT" : "no alert"}</span>`;
+  $("mAlert").textContent = `chance of failure · alert line ${pct(thr, 1)} (set on training folds)`;
+  $("mModes").innerHTML = ["TWF", "HDF", "PWF", "OSF"].map(k => { const v = r["p_" + k];
+    return `<div class="mode-row"><span>${MODE_LABEL[k]}</span><div class="bar"><i style="width:${Math.min(100, v * 100)}%;background:${v >= 0.5 ? "var(--danger)" : v >= 0.2 ? "var(--warn-fill)" : "var(--slate)"}"></i></div><span class="num">${pct(v)}</span></div>`; }).join("");
+  $("mReason").textContent = "Why: " + r.reason;
+  $("mActual").innerHTML = M.actual == null ? "" : (() => { const failed = M.actual !== "no failure"; const right = failed === r.alert;
+    return `<div class="actual">Actual outcome: <b>${M.actual}</b> · ${right ? '<span style="color:var(--ok)">prediction correct</span>' : '<span style="color:var(--danger)">prediction wrong</span>'}</div>`; })();
+  // what happens next
+  $("mInc").textContent = inc;
+  const ra = r.runs_until_alert, tw = r.runs_until_tool_window;
+  $("mNext").innerHTML = r.alert ? '<span style="color:var(--danger)">At risk now</span>'
+    : ra != null ? `<span style="color:${ra <= 20 ? "var(--warn)" : "var(--text)"}">Alert in ${ra} run${ra === 1 ? "" : "s"}</span>`
+    : '<span style="color:var(--ok)">No alert ahead</span>';
+  $("mNextD").textContent = (ra == null && !r.alert ? "Risk stays below the alert line up to 260 min of wear (the observed maximum). " : "") +
+    (tw === 0 ? "The tool is already in its 200-240 min wear window, where tool-wear failures happen at a random point." : `The tool enters its 200-240 min wear window in ${tw} runs (about ${tw * inc} min).`);
+  (() => { const el = $("mChart"), P = r.projection, W = Math.max(220, el.clientWidth || 300), H = 120, n = P.p.length;
+    if (!n) { el.innerHTML = ""; return; }
+    const mx = Math.max(thr * 1.5, ...P.p), x = i => 6 + i * (W - 12) / Math.max(1, n - 1), y = v => H - 14 - v / mx * (H - 22);
+    let sv = `<line x1="0" x2="${W}" y1="${y(thr)}" y2="${y(thr)}" stroke="var(--danger)" stroke-dasharray="4 3"/>`;
+    const wi = P.wear.findIndex(w => w >= 200); if (wi > 0) sv += `<rect x="${x(wi)}" y="0" width="${Math.max(0, x(n - 1) - x(wi))}" height="${H - 14}" fill="var(--accent2)" opacity=".10"/><line x1="${x(wi)}" x2="${x(wi)}" y1="0" y2="${H - 14}" stroke="var(--accent2)" stroke-dasharray="3 3"/>`;
+    sv += `<polyline fill="none" stroke="var(--accent)" stroke-width="2.2" points="${P.p.map((v, i) => x(i).toFixed(1) + "," + y(v).toFixed(1)).join(" ")}"/>`;
+    if (ra != null) sv += `<circle cx="${x(ra)}" cy="${y(P.p[ra])}" r="4" fill="var(--danger)"/>`;
+    sv += `<text x="6" y="${H - 2}" font-size="10" fill="var(--text-dim)">now</text><text x="${W - 6}" y="${H - 2}" font-size="10" fill="var(--text-dim)" text-anchor="end">+${n - 1} runs</text>`;
+    el.setAttribute("viewBox", `0 0 ${W} ${H}`); el.innerHTML = sv; })();
+  // act: cost-loss + action
+  const C = mCosts(), ratio = C.loss > 0 ? C.cost / C.loss : null, exp = p * C.loss;
+  let dec, col;
+  if (r.alert || (ratio != null && p >= ratio)) { dec = "Act now"; col = "var(--danger)"; }
+  else if (ra != null && ra <= 20) { dec = "Plan maintenance"; col = "var(--warn)"; }
+  else if (tw === 0) { dec = "Schedule a tool change"; col = "var(--warn)"; }
+  else { dec = "Keep running"; col = "var(--ok)"; }
+  const why = r.alert ? "The model's failure alert is on."
+    : dec === "Act now" ? `Expected loss ${inr(exp)} (${pct(p, p < 0.1 ? 1 : 0)} × ${inr(C.loss)}) is more than the ${inr(C.cost)} maintenance cost.`
+    : dec === "Plan maintenance" ? `Risk crosses the alert line in ${ra} run${ra === 1 ? "" : "s"}.`
+    : dec === "Schedule a tool change" ? "The tool is inside its 200-240 min wear window."
+    : `Expected loss ${inr(exp)} is below the ${inr(C.cost)} maintenance cost.`;
+  $("mDecision").innerHTML = `<span style="color:${col}">${dec}</span><div style="font-size:12px;font-weight:400;color:var(--text-dim);margin-top:2px">${why}</div>`;
+  const recs = [["!", r.action, r.likely_failure_type !== "none" ? `Most likely: ${r.likely_failure_type}.` : "No failure mechanism is close."]];
+  if (dec !== "Keep running") recs.push(["L", "Log the readings and re-check after the next run", "Confirms whether the action worked."]);
+  $("mRecs").innerHTML = recs.map(([ic, t, sub]) => `<li><span class="ic" aria-hidden="true">${ic}</span><div><b>${t}</b><span>${sub}</span></div></li>`).join("");
+  $("mRule").innerHTML = ratio == null ? "Enter maintenance costs below for a cost-based decision." :
+    `Act when chance of failure > cost ÷ loss = ${inr(C.cost)} ÷ ${inr(C.loss)} = <b>${pct(ratio, 1)}</b>. Expected loss now: ${inr(exp)}.`;
+}
+async function mLoadReal() {
+  try {
+    const t = await j("/ecorisk-ai/samples/ai4i_unseen_machines_with_answers.csv");
+    const lines = t.trim().split(/\r?\n/), h = lines[0].split(","), ix = k => h.indexOf(k);
+    const rows = lines.slice(1).map(l => l.split(","));
+    const label = (c) => { for (const k of ["TWF", "HDF", "PWF", "OSF", "RNF"]) if (c[ix(k)] === "1") return { TWF: "tool wear failure", HDF: "heat dissipation failure", PWF: "power failure", OSF: "overstrain failure", RNF: "random failure" }[k]; return c[ix("Machine failure")] === "1" ? "failure" : "no failure"; };
+    const pick = []; const want = { "heat dissipation failure": 1, "power failure": 1, "overstrain failure": 1, "tool wear failure": 1, "no failure": 3 };
+    for (const c of rows) { const lb = label(c); if (want[lb] > 0) { want[lb]--; pick.push(c); } }
+    M.real = pick.map(c => ({ udi: c[ix("UDI")], actual: label(c), m: { type: c[ix("Type")], air: +c[ix("Air temperature [K]")], process: +c[ix("Process temperature [K]")], rpm: +c[ix("Rotational speed [rpm]")], torque: +c[ix("Torque [Nm]")], wear: +c[ix("Tool wear [min]")] } }));
+    $("mReal").innerHTML = '<option value="">Choose one…</option>' + M.real.map((r, i) => `<option value="${i}">Machine #${r.udi} (type ${r.m.type}) · actual: ${r.actual}</option>`).join("");
+  } catch { /* picker stays empty */ }
+}
+// ---- fleet scoring
+async function fScore(text) {
+  $("fErr").textContent = ""; $("fStats").innerHTML = ""; $("fRows").innerHTML = ""; $("fHead").innerHTML = ""; $("fNote").textContent = "Scoring…";
+  try {
+    const d = await j("/api/ai4i/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ csv: text }) });
+    const s = d.score;
+    const tiles = [[d.n.toLocaleString(), "machines scored"], [d.alerts.toLocaleString(), "failure alerts"]];
+    if (s) tiles.push([`${s.tp} / ${s.failures}`, "real failures caught"], [s.fp, "false alarms"], [pct(s.precision), "alerts that were right"], [pct(s.recall), "failures caught (recall)"], [s.pr_auc != null ? s.pr_auc.toFixed(3) : "–", "PR-AUC on this file"]);
+    $("fStats").innerHTML = tiles.map(([v, l]) => `<div class="well stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+    const ren = Object.entries(d.renamed || {});
+    $("fNote").textContent = [s ? "This file includes the real outcomes, so the predictions above are scored against them." : "No outcome column in this file: predictions only.",
+      ren.length ? "Columns matched: " + ren.map(([a, b]) => `${a} → ${b}`).join(", ") + "." : "", d.physical_issues.length ? "Check: " + d.physical_issues.join("; ") : "",
+      `Showing the ${Math.min(50, d.rows.length)} highest-risk machines.`].filter(Boolean).join(" ");
+    const rows = d.rows.slice().sort((a, b) => b.failure_probability - a.failure_probability).slice(0, 50);
+    const hasA = rows.some(r => r.actual != null);
+    $("fHead").innerHTML = `<tr><th>Row</th><th>Type</th><th>Chance of failure</th><th>Likely failure</th><th>Why</th><th>Runs to alert</th><th>Action</th>${hasA ? "<th>Actual</th>" : ""}</tr>`;
+    $("fRows").innerHTML = rows.map(r => `<tr class="${r.alert ? "alert" : ""}"><td>${r.row}</td><td>${r.type}</td><td>${pct(r.failure_probability, 1)}${r.alert ? " ⚠" : ""}</td><td>${r.likely_failure_type}</td><td class="r">${r.reason}</td><td>${r.alert ? "now" : r.runs_until_alert ?? "–"}</td><td class="r">${r.action}</td>${hasA ? `<td>${r.actual ? '<b style="color:var(--danger)">failed</b>' : "ok"}</td>` : ""}</tr>`).join("");
+    M.fleetCsv = d.csv; $("fDownload").classList.remove("hide");
+  } catch (e) { $("fNote").textContent = ""; $("fErr").textContent = friendly(e.message); }
+}
+$("fTest").onclick = async () => fScore(await j("/ecorisk-ai/samples/ai4i_unseen_machines.csv"));
+$("fTestAns").onclick = async () => fScore(await j("/ecorisk-ai/samples/ai4i_unseen_machines_with_answers.csv"));
+$("fFile").onchange = (e) => { const f = e.target.files[0]; if (f) f.text().then(fScore); };
+$("fDownload").onclick = () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([M.fleetCsv], { type: "text/csv" })); a.download = "ecorisk_machine_predictions.csv"; document.body.appendChild(a); a.click(); a.remove(); };
+// ---- model & data section
+function mModel(R) {
+  const e = R.eda, t = R.test, cm = t.confusion;
+  $("mPipe").innerHTML = [
+    ["Explore & clean", `${e.rows.toLocaleString()} machines · ${e.missing_values} missing values · ${e.duplicate_rows} duplicates · ${pct(e.failure_rate, 1)} failures. IDs dropped; failure-mode columns excluded as inputs.`],
+    ["Engineer features", "Power, temperature difference, strain and its per-type limit, tool past 200 min: straight from the documented failure mechanisms."],
+    ["Select a model", `5-fold cross-validation on 8,000 training machines: baseline, logistic regression, random forest, gradient boosting, each with and without engineered features.`],
+    ["Validate & test", `Alert line chosen on training folds. ${t.n_test.toLocaleString()} test machines scored once: PR-AUC ${t.pr_auc.toFixed(3)} vs ${t.baseline_pr_auc.toFixed(3)} baseline.`],
+    ["Predict unseen", "Failure, failure type, reason, runs until the alert line, and a maintenance action, for any AI4I-format file."]
+  ].map(([h, p]) => `<div class="well"><h4>${h}</h4><p>${p}</p></div>`).join("");
+  $("mEda").innerHTML = [[e.rows.toLocaleString(), "machines (rows)"], [pct(e.failure_rate, 1), `failures (${e.failures})`], [e.missing_values, "missing values"], [e.duplicate_rows, "duplicate rows"]]
+    .map(([v, l]) => `<div class="well stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  const names = { wear_min: "Tool wear (min)", temp_diff_K: "Temperature difference (K)", power_W: "Power (W)", rpm: "Rotational speed (rpm)", strain_ratio: "Strain vs. type limit" };
+  $("mCurves").innerHTML = Object.entries(e.failure_rate_curves).map(([k, bins]) => {
+    const mx = Math.max(...bins.map(b => b.rate), 0.01), n = bins.length;
+    const bars = bins.map((b, i) => { const h = b.rate / mx * 52; return `<rect x="${i * 100 / n + 0.6}%" y="${58 - h}" width="${100 / n - 1.2}%" height="${h}" fill="${b.rate > 0.1 ? "var(--danger)" : b.rate > 0.04 ? "var(--warn-fill)" : "var(--slate)"}"><title>${b.from}-${b.to}: ${pct(b.rate, 1)} failures (${b.n} machines)</title></rect>`; }).join("");
+    return `<div class="curve"><div class="ct">${names[k]} · failure rate up to ${pct(mx, 0)}</div><svg viewBox="0 0 100 70" preserveAspectRatio="none">${bars}</svg><div class="ct" style="display:flex;justify-content:space-between"><span>${bins[0].from}</span><span>${bins[n - 1].to}</span></div></div>`;
+  }).join("");
+  $("mClean").innerHTML = [`No missing values and no duplicate rows; ${e.physical_issues.length ? e.physical_issues.join("; ") : "all readings within physical limits"}.`,
+    `Dropped as identifiers: ${e.dropped_as_ids.join(", ")} (they would let a model memorise machines).`,
+    ...Object.entries(e.excluded_as_leakage).map(([k, v]) => `<b>${k}</b> excluded as an input: ${v}. Used only as a separate target for failure type.`),
+    `${e.failures_without_mode} failures have no recorded mode; RNF (random failures, ${e.mode_counts.RNF} cases) is unpredictable by design.`].map(x => `<li>${x}</li>`).join("");
+  $("mFeat").innerHTML = Object.entries(R.features.rationale).map(([k, v]) => `<li><b>${k}</b>: ${v}</li>`).join("");
+  $("mCv").innerHTML = R.model_selection.map(m => { const ch = m.model === R.chosen.model && m.features === R.chosen.features;
+    return `<tr class="${ch ? "best" : ""}"><td>${m.model}${ch ? " · chosen" : ""}</td><td>${m.features}</td><td>${m.cv_pr_auc.toFixed(3)} ± ${m.cv_pr_auc_sd.toFixed(3)}</td><td>${m.cv_roc_auc.toFixed(3)}</td></tr>`; }).join("");
+  $("mTest").innerHTML = [[t.pr_auc.toFixed(3), `PR-AUC (baseline ${t.baseline_pr_auc.toFixed(3)})`], [t.roc_auc.toFixed(3), "ROC-AUC"], [`${cm.tp} / ${t.test_failures}`, "failures caught"],
+    [pct(t.precision), "alerts that were right"], [cm.fp, "false alarms in 2,000 machines"]].map(([v, l]) => `<div class="well stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  $("mCm").innerHTML = `<div class="cm"><div class="h"></div><div class="h">predicted ok</div><div class="h">predicted failure</div>
+    <div class="h">actually ok</div><div class="good"><b>${cm.tn}</b>correct</div><div class="bad"><b>${cm.fp}</b>false alarms</div>
+    <div class="h">actually failed</div><div class="bad"><b>${cm.fn}</b>missed</div><div class="good"><b>${cm.tp}</b>caught</div></div>`;
+  const mb = t.missed_by_mode;
+  $("mMiss").innerHTML = `Honest misses: ${Object.entries(mb).filter(([, v]) => v).map(([k, v]) => `${v} ${MODE_LABEL[k] || "random"}`).join(", ")}${t.missed_without_mode ? `, ${t.missed_without_mode} with no recorded mode` : ""}. Tool-wear failures happen at a random point between 200 and 240 min, so no model can time them exactly; EcoRisk AI flags when a tool enters that window instead.`;
+  const mx = Math.max(...R.drivers.map(d => d.importance));
+  $("mDrivers").innerHTML = R.drivers.slice(0, 8).map(d => `<div class="fi"><span>${d.feature}</span><div class="bar"><i style="left:0;width:${Math.max(0, d.importance) / mx * 100}%;background:var(--accent)"></i></div><span class="num">${d.importance.toFixed(3)}</span></div>`).join("");
+  $("mModeTab").innerHTML = Object.entries(R.modes).map(([k, v]) => `<tr><td>${MODE_LABEL[k]} (${k})</td><td>${v.test_positives}</td><td>${v.pr_auc.toFixed(3)}</td><td>${v.roc_auc.toFixed(3)}</td></tr>`).join("");
+}
+
 /* ---------- boot ---------- */
 (async function init() {
   try {
     const [sites, risk, res] = await Promise.all([j("/api/sites"), j("/api/risk"), j("/api/results")]);
     try { S.ext = await j("/api/external"); } catch { S.ext = null; }
     S.hz = await j("/api/horizons");
+    try { M.res = await j("/api/ai4i/results"); mModel(M.res); } catch (e) { $("mErr").textContent = "Machine model unavailable: " + e.message; }
+    mBuild(); mLoadReal(); mPredict();
     risk.by = Object.fromEntries(risk.ranking.map(r => [r.site_id, r]));
     S.sites = sites.sort((a, b) => (risk.by[b.site_id]?.predicted_risk_prob ?? -1) - (risk.by[a.site_id]?.predicted_risk_prob ?? -1));
     S.risk = risk; S.res = res;

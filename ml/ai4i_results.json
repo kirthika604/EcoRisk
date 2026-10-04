@@ -1,0 +1,728 @@
+{
+ "generated_by": "ml/ai4i_model.py",
+ "dataset": "AI4I 2020 Predictive Maintenance (UCI, S. Matzka, CC BY 4.0)",
+ "eda": {
+  "rows": 10000,
+  "columns": 14,
+  "missing_values": 0,
+  "duplicate_rows": 0,
+  "physical_issues": [],
+  "failure_rate": 0.0339,
+  "failures": 339,
+  "mode_counts": {
+   "TWF": 46,
+   "HDF": 115,
+   "PWF": 95,
+   "OSF": 98,
+   "RNF": 19
+  },
+  "failures_without_mode": 9,
+  "type_share": {
+   "L": 0.6,
+   "M": 0.2997,
+   "H": 0.1003
+  },
+  "failure_rate_by_type": {
+   "H": 0.0209,
+   "L": 0.0392,
+   "M": 0.0277
+  },
+  "dropped_as_ids": [
+   "UDI",
+   "Product ID"
+  ],
+  "excluded_as_leakage": {
+   "TWF": "failure mode recorded as part of the outcome (P(failure | TWF=1) = 1.00)",
+   "HDF": "failure mode recorded as part of the outcome (P(failure | HDF=1) = 1.00)",
+   "PWF": "failure mode recorded as part of the outcome (P(failure | PWF=1) = 1.00)",
+   "OSF": "failure mode recorded as part of the outcome (P(failure | OSF=1) = 1.00)",
+   "RNF": "failure mode recorded as part of the outcome (P(failure | RNF=1) = 0.05)"
+  },
+  "summary": {
+   "air temperature": {
+    "min": 295.3,
+    "25%": 298.3,
+    "50%": 300.1,
+    "75%": 301.5,
+    "max": 304.5
+   },
+   "process temperature": {
+    "min": 305.7,
+    "25%": 308.8,
+    "50%": 310.1,
+    "75%": 311.1,
+    "max": 313.8
+   },
+   "rotational speed": {
+    "min": 1168.0,
+    "25%": 1423.0,
+    "50%": 1503.0,
+    "75%": 1612.0,
+    "max": 2886.0
+   },
+   "torque": {
+    "min": 3.8,
+    "25%": 33.2,
+    "50%": 40.1,
+    "75%": 46.8,
+    "max": 76.6
+   },
+   "tool wear": {
+    "min": 0.0,
+    "25%": 53.0,
+    "50%": 108.0,
+    "75%": 162.0,
+    "max": 253.0
+   },
+   "power (torque x speed)": {
+    "min": 1148.44,
+    "25%": 5561.18,
+    "50%": 6271.03,
+    "75%": 7003.0,
+    "max": 10469.92
+   },
+   "temperature difference": {
+    "min": 7.6,
+    "25%": 9.3,
+    "50%": 9.8,
+    "75%": 11.0,
+    "max": 12.1
+   }
+  },
+  "failure_rate_curves": {
+   "wear_min": [
+    {
+     "from": 0.0,
+     "to": 20.0,
+     "rate": 0.0265,
+     "n": 904
+    },
+    {
+     "from": 20.0,
+     "to": 40.0,
+     "rate": 0.0196,
+     "n": 917
+    },
+    {
+     "from": 40.0,
+     "to": 60.0,
+     "rate": 0.0154,
+     "n": 910
+    },
+    {
+     "from": 60.0,
+     "to": 80.0,
+     "rate": 0.0263,
+     "n": 914
+    },
+    {
+     "from": 80.0,
+     "to": 100.0,
+     "rate": 0.0244,
+     "n": 902
+    },
+    {
+     "from": 100.0,
+     "to": 120.0,
+     "rate": 0.025,
+     "n": 921
+    },
+    {
+     "from": 120.0,
+     "to": 140.0,
+     "rate": 0.0154,
+     "n": 907
+    },
+    {
+     "from": 140.0,
+     "to": 160.0,
+     "rate": 0.0229,
+     "n": 917
+    },
+    {
+     "from": 160.0,
+     "to": 180.0,
+     "rate": 0.0242,
+     "n": 910
+    },
+    {
+     "from": 180.0,
+     "to": 200.0,
+     "rate": 0.0393,
+     "n": 916
+    },
+    {
+     "from": 200.0,
+     "to": 220.0,
+     "rate": 0.1377,
+     "n": 632
+    },
+    {
+     "from": 220.0,
+     "to": 240.0,
+     "rate": 0.2269,
+     "n": 119
+    }
+   ],
+   "temp_diff_K": [
+    {
+     "from": 7.5,
+     "to": 8.0,
+     "rate": 0.1486,
+     "n": 249
+    },
+    {
+     "from": 8.0,
+     "to": 8.5,
+     "rate": 0.1776,
+     "n": 428
+    },
+    {
+     "from": 8.5,
+     "to": 9.0,
+     "rate": 0.0364,
+     "n": 1071
+    },
+    {
+     "from": 9.0,
+     "to": 9.5,
+     "rate": 0.0236,
+     "n": 2160
+    },
+    {
+     "from": 9.5,
+     "to": 10.0,
+     "rate": 0.0196,
+     "n": 1629
+    },
+    {
+     "from": 10.0,
+     "to": 10.5,
+     "rate": 0.0284,
+     "n": 774
+    },
+    {
+     "from": 10.5,
+     "to": 11.0,
+     "rate": 0.0233,
+     "n": 1547
+    },
+    {
+     "from": 11.0,
+     "to": 11.5,
+     "rate": 0.0229,
+     "n": 1874
+    },
+    {
+     "from": 11.5,
+     "to": 12.0,
+     "rate": 0.0114,
+     "n": 264
+    }
+   ],
+   "power_W": [
+    {
+     "from": 2750.0,
+     "to": 3500.0,
+     "rate": 1.0,
+     "n": 23
+    },
+    {
+     "from": 3500.0,
+     "to": 4250.0,
+     "rate": 0.0115,
+     "n": 260
+    },
+    {
+     "from": 4250.0,
+     "to": 5000.0,
+     "rate": 0.0071,
+     "n": 842
+    },
+    {
+     "from": 5000.0,
+     "to": 5750.0,
+     "rate": 0.0061,
+     "n": 1968
+    },
+    {
+     "from": 5750.0,
+     "to": 6500.0,
+     "rate": 0.0099,
+     "n": 2718
+    },
+    {
+     "from": 6500.0,
+     "to": 7250.0,
+     "rate": 0.0236,
+     "n": 2373
+    },
+    {
+     "from": 7250.0,
+     "to": 8000.0,
+     "rate": 0.0564,
+     "n": 1258
+    },
+    {
+     "from": 8000.0,
+     "to": 8750.0,
+     "rate": 0.137,
+     "n": 438
+    },
+    {
+     "from": 8750.0,
+     "to": 9500.0,
+     "rate": 0.5938,
+     "n": 96
+    },
+    {
+     "from": 9500.0,
+     "to": 10250.0,
+     "rate": 1.0,
+     "n": 15
+    }
+   ],
+   "rpm": [
+    {
+     "from": 1150.0,
+     "to": 1300.0,
+     "rate": 0.2269,
+     "n": 216
+    },
+    {
+     "from": 1300.0,
+     "to": 1450.0,
+     "rate": 0.0687,
+     "n": 3174
+    },
+    {
+     "from": 1450.0,
+     "to": 1600.0,
+     "rate": 0.0059,
+     "n": 3897
+    },
+    {
+     "from": 1600.0,
+     "to": 1750.0,
+     "rate": 0.0069,
+     "n": 1742
+    },
+    {
+     "from": 1750.0,
+     "to": 1900.0,
+     "rate": 0.0036,
+     "n": 561
+    },
+    {
+     "from": 1900.0,
+     "to": 2050.0,
+     "rate": 0.0088,
+     "n": 227
+    },
+    {
+     "from": 2050.0,
+     "to": 2200.0,
+     "rate": 0.023,
+     "n": 87
+    },
+    {
+     "from": 2200.0,
+     "to": 2350.0,
+     "rate": 0.05,
+     "n": 40
+    },
+    {
+     "from": 2350.0,
+     "to": 2500.0,
+     "rate": 0.125,
+     "n": 24
+    }
+   ],
+   "strain_ratio": [
+    {
+     "from": 0.0,
+     "to": 0.1,
+     "rate": 0.023,
+     "n": 1394
+    },
+    {
+     "from": 0.1,
+     "to": 0.2,
+     "rate": 0.0216,
+     "n": 1390
+    },
+    {
+     "from": 0.2,
+     "to": 0.3,
+     "rate": 0.0151,
+     "n": 1387
+    },
+    {
+     "from": 0.3,
+     "to": 0.4,
+     "rate": 0.0131,
+     "n": 1373
+    },
+    {
+     "from": 0.4,
+     "to": 0.5,
+     "rate": 0.0213,
+     "n": 1267
+    },
+    {
+     "from": 0.5,
+     "to": 0.6,
+     "rate": 0.0192,
+     "n": 1091
+    },
+    {
+     "from": 0.6,
+     "to": 0.7,
+     "rate": 0.0272,
+     "n": 809
+    },
+    {
+     "from": 0.7,
+     "to": 0.8,
+     "rate": 0.0564,
+     "n": 585
+    },
+    {
+     "from": 0.8,
+     "to": 0.9,
+     "rate": 0.0636,
+     "n": 346
+    },
+    {
+     "from": 0.9,
+     "to": 1.0,
+     "rate": 0.0857,
+     "n": 140
+    },
+    {
+     "from": 1.0,
+     "to": 1.1,
+     "rate": 1.0,
+     "n": 66
+    },
+    {
+     "from": 1.1,
+     "to": 1.2,
+     "rate": 1.0,
+     "n": 22
+    }
+   ]
+  }
+ },
+ "split": {
+  "test_size": 0.2,
+  "train": 8000,
+  "test": 2000,
+  "cv_folds": 5,
+  "seed": 42,
+  "stratified": true
+ },
+ "features": {
+  "raw": [
+   "product type (L/M/H)",
+   "air temperature",
+   "process temperature",
+   "rotational speed",
+   "torque",
+   "tool wear"
+  ],
+  "engineered": [
+   "power (torque x speed)",
+   "temperature difference",
+   "strain (wear x torque)",
+   "strain vs. type limit",
+   "tool past 200 min"
+  ],
+  "rationale": {
+   "power (torque x speed)": "power failure happens below 3.5 kW or above 9 kW",
+   "temperature difference": "heat-dissipation failure below 8.6 K at speeds under 1,380 rpm",
+   "strain (wear x torque)": "overstrain failure above 11,000 / 12,000 / 13,000 minNm (L / M / H)",
+   "strain vs. type limit": "the same, scaled to each product type's limit",
+   "tool past 200 min": "tool-wear failure happens between 200 and 240 min"
+  }
+ },
+ "model_selection": [
+  {
+   "model": "baseline (failure base rate)",
+   "features": "+ engineered",
+   "cv_pr_auc": 0.0339,
+   "cv_pr_auc_sd": 0.0003,
+   "cv_roc_auc": 0.5
+  },
+  {
+   "model": "logistic regression",
+   "features": "raw sensors only",
+   "cv_pr_auc": 0.4433,
+   "cv_pr_auc_sd": 0.027,
+   "cv_roc_auc": 0.8969
+  },
+  {
+   "model": "logistic regression",
+   "features": "+ engineered",
+   "cv_pr_auc": 0.5132,
+   "cv_pr_auc_sd": 0.0211,
+   "cv_roc_auc": 0.9461
+  },
+  {
+   "model": "random forest",
+   "features": "raw sensors only",
+   "cv_pr_auc": 0.7597,
+   "cv_pr_auc_sd": 0.0404,
+   "cv_roc_auc": 0.9709
+  },
+  {
+   "model": "random forest",
+   "features": "+ engineered",
+   "cv_pr_auc": 0.8967,
+   "cv_pr_auc_sd": 0.0239,
+   "cv_roc_auc": 0.9817
+  },
+  {
+   "model": "gradient boosting",
+   "features": "raw sensors only",
+   "cv_pr_auc": 0.7981,
+   "cv_pr_auc_sd": 0.0429,
+   "cv_roc_auc": 0.9666
+  },
+  {
+   "model": "gradient boosting",
+   "features": "+ engineered",
+   "cv_pr_auc": 0.881,
+   "cv_pr_auc_sd": 0.0243,
+   "cv_roc_auc": 0.9692
+  }
+ ],
+ "chosen": {
+  "model": "random forest",
+  "features": "+ engineered"
+ },
+ "test": {
+  "pr_auc": 0.8793,
+  "roc_auc": 0.9714,
+  "precision": 0.9655,
+  "recall": 0.8235,
+  "f1": 0.8889,
+  "brier": 0.00857,
+  "baseline_pr_auc": 0.034,
+  "baseline_brier": 0.03284,
+  "confusion": {
+   "tn": 1930,
+   "fp": 2,
+   "fn": 12,
+   "tp": 56
+  },
+  "threshold": 0.4541,
+  "n_test": 2000,
+  "test_failures": 68,
+  "calibration": [
+   {
+    "predicted": 0.0,
+    "observed": 0.0015
+   },
+   {
+    "predicted": 0.003,
+    "observed": 0.0
+   },
+   {
+    "predicted": 0.0063,
+    "observed": 0.006
+   },
+   {
+    "predicted": 0.2155,
+    "observed": 0.1916
+   }
+  ],
+  "missed_by_mode": {
+   "TWF": 9,
+   "HDF": 1,
+   "PWF": 0,
+   "OSF": 0,
+   "RNF": 0
+  },
+  "missed_without_mode": 2
+ },
+ "drivers": [
+  {
+   "feature": "rotational speed",
+   "key": "rpm",
+   "importance": 0.3221
+  },
+  {
+   "feature": "temperature difference",
+   "key": "temp_diff_K",
+   "importance": 0.2584
+  },
+  {
+   "feature": "power (torque x speed)",
+   "key": "power_W",
+   "importance": 0.0853
+  },
+  {
+   "feature": "strain vs. type limit",
+   "key": "strain_ratio",
+   "importance": 0.0543
+  },
+  {
+   "feature": "tool wear",
+   "key": "wear_min",
+   "importance": 0.0406
+  },
+  {
+   "feature": "strain (wear x torque)",
+   "key": "strain",
+   "importance": 0.0242
+  },
+  {
+   "feature": "torque",
+   "key": "torque_Nm",
+   "importance": 0.0226
+  },
+  {
+   "feature": "tool past 200 min",
+   "key": "wear_ge_200",
+   "importance": 0.0124
+  },
+  {
+   "feature": "product type (L/M/H)",
+   "key": "type_code",
+   "importance": 0.0037
+  },
+  {
+   "feature": "process temperature",
+   "key": "process_K",
+   "importance": -0.0082
+  },
+  {
+   "feature": "air temperature",
+   "key": "air_K",
+   "importance": -0.0124
+  }
+ ],
+ "modes": {
+  "TWF": {
+   "test_positives": 10,
+   "pr_auc": 0.0612,
+   "roc_auc": 0.9377
+  },
+  "HDF": {
+   "test_positives": 29,
+   "pr_auc": 1.0,
+   "roc_auc": 1.0
+  },
+  "PWF": {
+   "test_positives": 13,
+   "pr_auc": 0.9822,
+   "roc_auc": 0.9999
+  },
+  "OSF": {
+   "test_positives": 16,
+   "pr_auc": 0.9681,
+   "roc_auc": 0.9998
+  }
+ },
+ "example_projection": {
+  "wear_start": 170.0,
+  "runs_until_alert": null,
+  "wear": [
+   170.0,
+   172.0,
+   174.0,
+   176.0,
+   178.0,
+   180.0,
+   182.0,
+   184.0,
+   186.0,
+   188.0,
+   190.0,
+   192.0,
+   194.0,
+   196.0,
+   198.0,
+   200.0,
+   202.0,
+   204.0,
+   206.0,
+   208.0,
+   210.0,
+   212.0,
+   214.0,
+   216.0,
+   218.0,
+   220.0,
+   222.0,
+   224.0,
+   226.0,
+   228.0,
+   230.0,
+   232.0,
+   234.0,
+   236.0,
+   238.0,
+   240.0,
+   242.0,
+   244.0,
+   246.0,
+   248.0,
+   250.0,
+   252.0,
+   254.0,
+   256.0,
+   258.0,
+   260.0
+  ],
+  "p": [
+   0.0097,
+   0.0033,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.016,
+   0.0096,
+   0.0096,
+   0.0064,
+   0.0064,
+   0.0064,
+   0.0064,
+   0.0064,
+   0.0064,
+   0.0064,
+   0.0063,
+   0.0128,
+   0.0096,
+   0.0127,
+   0.0127,
+   0.0317,
+   0.1113,
+   0.108,
+   0.0947,
+   0.095,
+   0.0988,
+   0.1401,
+   0.1465,
+   0.1367,
+   0.1465,
+   0.1632,
+   0.1403,
+   0.1209,
+   0.1178,
+   0.1178,
+   0.1178,
+   0.118,
+   0.1181,
+   0.1181,
+   0.1115,
+   0.1246,
+   0.141,
+   0.1346,
+   0.1346
+  ]
+ }
+}

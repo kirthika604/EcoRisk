@@ -356,3 +356,82 @@ def test_generic_api_endpoints():
         assert post("profile", {"csv": "only_one_column\n1\n2"})[0] == 400
     finally:
         srv.shutdown()
+
+
+# ---------- machine module (AI4I 2020, ml/ai4i_model.py + ml/ai4i_predict.py) ----------
+def test_ai4i_results_are_honest_and_complete():
+    import json
+    R = json.load(open(os.path.join(ROOT, "ml", "ai4i_results.json")))
+    assert R["eda"]["rows"] == 10000 and set(R["eda"]["excluded_as_leakage"]) == {"TWF", "HDF", "PWF", "OSF", "RNF"}
+    assert R["split"]["test"] == 2000 and R["split"]["cv_folds"] == 5
+    chosen = [m for m in R["model_selection"] if m["model"] == R["chosen"]["model"] and m["features"] == R["chosen"]["features"]][0]
+    assert chosen["cv_pr_auc"] == max(m["cv_pr_auc"] for m in R["model_selection"])  # chosen on CV, not test
+    eng = {m["model"]: m["cv_pr_auc"] for m in R["model_selection"] if m["features"] == "+ engineered"}
+    raw = {m["model"]: m["cv_pr_auc"] for m in R["model_selection"] if m["features"] == "raw sensors only"}
+    assert all(eng[k] > raw[k] for k in raw)  # feature engineering helps every real model
+    t = R["test"]
+    assert t["pr_auc"] > 10 * t["baseline_pr_auc"] and t["roc_auc"] > 0.9
+    assert t["confusion"]["tp"] + t["confusion"]["fn"] == t["test_failures"]
+
+
+def test_ai4i_predict_unseen_scores_match_and_columns_are_tolerant():
+    import ai4i_predict as P
+    df, _ = P.read(open(os.path.join(ROOT, "ecorisk-ai", "samples", "ai4i_unseen_machines_with_answers.csv")).read())
+    out = P.predict(df)
+    import json
+    t = json.load(open(os.path.join(ROOT, "ml", "ai4i_results.json")))["test"]
+    assert out["score"]["tp"] == t["confusion"]["tp"] and out["score"]["fp"] == t["confusion"]["fp"]
+    r = out["rows"][0]
+    assert {"failure_probability", "likely_failure_type", "reason", "runs_until_alert", "runs_until_tool_window", "action"} <= set(r)
+    d = pd.read_csv(os.path.join(ROOT, "ecorisk-ai", "samples", "ai4i_unseen_machines.csv")).head(20)
+    d.columns = ["id", "product_id", "type", "air_temperature", "process_temperature", "rotational_speed", "torque", "tool_wear"]
+    df2, ren = P.read(d.to_csv(index=False))
+    assert len(ren) == 6 and "score" not in P.predict(df2)
+    with pytest.raises(ValueError, match="missing AI4I columns"):
+        P.predict(df2.drop(columns=["Torque [Nm]"]))
+    bad = df2.copy(); bad.loc[3, "Type"] = "X"
+    with pytest.raises(ValueError, match="Type must be L, M or H"):
+        P.predict(bad)
+
+
+def test_ai4i_mechanisms_and_projection():
+    import ai4i_predict as P
+    def one(**kw):
+        base = {"Type": "L", "Air temperature [K]": 298.5, "Process temperature [K]": 309.0, "Rotational speed [rpm]": 1500,
+                "Torque [Nm]": 40, "Tool wear [min]": 60}
+        base.update(kw)
+        return P.predict(pd.DataFrame([base]), curves=True)["rows"][0]
+    healthy = one()
+    assert not healthy["alert"] and healthy["failure_probability"] < 0.1
+    heat = one(**{"Air temperature [K]": 302.5, "Process temperature [K]": 310.6, "Rotational speed [rpm]": 1330, "Torque [Nm]": 50})
+    assert heat["alert"] and heat["likely_failure_type"] == "heat dissipation failure"
+    power = one(**{"Type": "M", "Rotational speed [rpm]": 1250, "Torque [Nm]": 70})
+    assert power["alert"] and "power" in power["reason"]
+    worn = one(**{"Tool wear [min]": 215})
+    assert worn["runs_until_tool_window"] == 0
+    p = healthy["projection"]["p"]
+    assert all(b >= a for a, b in zip(p, p[1:]))  # risk never falls as the tool wears
+    assert healthy["runs_until_tool_window"] == 70  # (200 - 60) / 2 min per L run
+
+
+def test_ai4i_api():
+    import json, urllib.request
+    srv = _serve()
+    try:
+        base = f"http://127.0.0.1:{srv.server_port}"
+        R = json.load(urllib.request.urlopen(base + "/api/ai4i/results"))
+        assert R["test"]["confusion"]["tp"] > 0
+        def post(path, body):
+            req = urllib.request.Request(base + path, json.dumps(body).encode(), {"Content-Type": "application/json"})
+            try:
+                r = urllib.request.urlopen(req, timeout=60); return r.status, json.load(r)
+            except urllib.error.HTTPError as e:
+                return e.code, json.load(e)
+        code, d = post("/api/ai4i/machine", {"machine": {"type": "L", "air": 298.5, "process": 309, "rpm": 1500, "torque": 40, "wear": 60}})
+        assert code == 200 and "projection" in d["rows"][0]
+        csv = open(os.path.join(ROOT, "ecorisk-ai", "samples", "ai4i_unseen_machines_with_answers.csv")).read()
+        code, d = post("/api/ai4i/predict", {"csv": csv})
+        assert code == 200 and d["n"] == 2000 and d["score"]["tp"] == R["test"]["confusion"]["tp"] and "failure_probability" in d["csv"]
+        assert post("/api/ai4i/predict", {"csv": "a,b\n1,2"})[0] == 400
+    finally:
+        srv.shutdown()

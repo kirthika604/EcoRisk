@@ -1,19 +1,50 @@
 # EcoRisk AI: predict what happens next
 
-**ALGOTHON26 · ALG-DATA-02 "Predict What Happens Next"**
+**ALGOTHON26 · ALG-DATA-02 "Predict What Happens Next" · base dataset: AI4I 2020 Predictive Maintenance (UCI)**
 
-Human activity weakens the land; weather pulls the trigger. EcoRisk AI learns both from 30 years of
-real satellite and weather data, then predicts what happens next at a site and what to do about it:
+EcoRisk AI predicts what happens next and what to do about it. On the official dataset (AI4I 2020,
+10,000 milling machines) it predicts **whether a machine will fail, which failure it will be, how many
+production runs it has left, and what maintenance should do**. The same engine also forecasts
+extreme-rainfall risk from 30 years of real weather and land data (module 2), and runs on any CSV.
 
-1. **Predict:** the chance of an extreme-rainfall day within the next **24 / 48 / 72 h**, with
-   relative risk ("12x the normal chance for this place and month").
-2. **Impact:** what it means for an operation (logistics, warehouse, retail, construction), from
-   the user's own operations profile.
-3. **Act:** a cost-loss decision (*act when probability > cost / loss*) with 2-3 concrete actions.
+Live: https://ecorisk-ai.onrender.com
 
-It also includes a structural land-fragility model (the original EcoRisk model), a what-if
-calculator, prediction on uploaded unseen data (any common weather CSV format), community safety
-guidance, and full validation on held-out years.
+## Machine module (AI4I 2020): the ALG-DATA-02 pipeline (`ml/ai4i_model.py`)
+1. **Exploration & cleaning:** 10,000 rows, 0 missing values, 0 duplicates, 3.4% failures; physical
+   range checks; IDs (UDI, Product ID) dropped. **TWF/HDF/PWF/OSF/RNF are excluded as inputs**,
+   because they are failure modes recorded as part of the outcome; they serve only as targets for the
+   failure-type models.
+2. **Feature engineering from the documented failure mechanisms:**
+   - power = torque x speed (power failure outside 3.5-9 kW)
+   - temperature difference (heat dissipation below 8.6 K at < 1,380 rpm)
+   - strain = wear x torque and its ratio to the per-type limit (overstrain above 11/12/13k minNm for L/M/H)
+   - tool past 200 min (tool wear failure at 200-240 min)
+3. **Model selection:** stratified 80/20 split; the 2,000-machine test set is untouched until the end.
+   5-fold CV on the training set compares baseline, logistic regression, random forest and gradient
+   boosting, each with and without the engineered features.
+
+   | 5-fold CV PR-AUC | raw sensors | + engineered |
+   |---|---|---|
+   | logistic regression | 0.443 | 0.513 |
+   | gradient boosting | 0.798 | 0.881 |
+   | **random forest (chosen)** | 0.760 | **0.897** |
+4. **Held-out test (2,000 machines, used once):** **PR-AUC 0.879** (baseline 0.034),
+   ROC-AUC 0.971, precision 97%, recall 82%: **56 of 68
+   failures caught, 2 false alarms**. The alert threshold comes from out-of-fold training predictions.
+   9 of the 12 misses are tool-wear failures, which the documentation says happen at a random point
+   between 200 and 240 min.
+5. **Failure type:** one model per mode (test PR-AUC): heat dissipation 1.00, power
+   0.98, overstrain 0.97, tool wear 0.06 (random by design).
+6. **What happens next:** each production run adds 2/3/5 min of tool wear (L/M/H). Projecting wear
+   forward gives *runs until the failure risk crosses the alert line* and *runs until the tool enters
+   its 200-240 min window*. Risk never falls as the tool wears.
+7. **Act:** maintenance action per mechanism (cooling, power band, torque or tool change), plus a
+   cost rule: act when chance of failure > maintenance cost / failure cost.
+8. **Predict unseen machines:** upload any AI4I-format CSV (renamed columns are matched); if it
+   includes "Machine failure", predictions are scored against it. Samples: the 2,000 held-out test
+   machines with and without answers (`ecorisk-ai/samples/ai4i_unseen_machines*.csv`).
+
+Note: AI4I 2020 is a synthetic dataset that reflects real predictive-maintenance data (per UCI).
 
 ## Any dataset: bring your own
 The same pipeline runs on **any CSV** (section "Any dataset" on the page, `ml/generic.py`). You pick the
@@ -51,7 +82,7 @@ which beats climatology. Limitations are reported on the page and in the methodo
 ```bash
 pip install -r requirements.txt
 python3 ml/ef_server.py          # http://localhost:8765
-python3 -m pytest ml/test_ef.py  # 24 tests (needs ml/ef_features.csv: python3 ml/ef_data.py)
+python3 -m pytest ml/test_ef.py  # 28 tests (needs ml/ef_features.csv: python3 ml/ef_data.py)
 ```
 
 ## Deploy
@@ -63,6 +94,7 @@ python3 -m pytest ml/test_ef.py  # 24 tests (needs ml/ef_features.csv: python3 m
 
 ## Rebuild the models from scratch
 ```bash
+python3 ml/ai4i_model.py      # machine module (AI4I 2020): EDA, CV model selection, test, samples
 python3 ml/ef_data.py         # pull NASA POWER weather, build features (writes ml/ef_features.csv, 77 MB, not in git)
 python3 ml/ef_model.py        # 72 h model + validation
 python3 ml/ef_horizons.py     # 24/48 h models, value curves, base rates
