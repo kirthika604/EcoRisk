@@ -98,6 +98,7 @@
   }
   .well { background: var(--panel-well); border: 1px solid var(--panel-border); border-radius: 8px; }
   .map-wrap { padding: 10px; }
+  @media (min-width: 821px) { .outlook > div:first-child { position: sticky; top: 64px; align-self: start; } }
   #map { width: 100%; height: auto; display: block; }
   #map path.india { fill: var(--land); stroke: var(--land-edge); stroke-width: 1.4; stroke-linejoin: round; }
   #map circle { cursor: pointer; stroke: #F6F4EE; stroke-width: 2; }
@@ -162,7 +163,7 @@
   .pipe p { margin: 0; font-size: 13px; color: var(--text-dim); }
 
   /* ---------- unseen ---------- */
-  .unseen { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .unseen { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; align-items: start; }
   @media (max-width: 820px) { .unseen { grid-template-columns: minmax(0, 1fr); } }
   textarea { width: 100%; min-height: 150px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; resize: vertical; }
   .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
@@ -307,6 +308,16 @@
   .pgrid label.chk { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 400; }
   .pgrid input[type=number], .pgrid input[type=text] { width: 100%; }
   .vcurve { width: 100%; height: 180px; display: block; }
+  .spark-wrap { margin-top: auto; padding-top: 10px; border-top: 1px solid var(--panel-border); }
+  .spark-k { font-size: 11px; color: var(--text-dim); margin-bottom: 4px; }
+  .spark { width: 100%; height: 56px; display: block; }
+  .xbar { height: 10px; border-radius: 5px; background: var(--track); overflow: hidden; }
+  .xbar i { display: block; height: 100%; border-radius: 5px; background: var(--warn-fill); width: 0; transition: width .35s; }
+  .land-sum { margin-top: auto; padding-top: 12px; border-top: 1px solid var(--panel-border); font-size: 13px; }
+  .land-sum .row2 { display: grid; grid-template-columns: 92px 1fr 46px; gap: 8px; align-items: center; margin-top: 6px; font-size: 12px; color: var(--text-dim); }
+  .land-sum .bar2 { height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+  .land-sum .bar2 i { display: block; height: 100%; border-radius: 4px; }
+  .calc > .well { display: flex; flex-direction: column; }
 
   footer { max-width: 1160px; margin: 0 auto; padding: 0 24px 40px; color: var(--text-dim); font-size: 12px; }
 </style>
@@ -372,6 +383,7 @@
         <div class="big" id="pProb">&ndash;</div>
         <div id="pRel" style="font-size:13px"></div>
         <dl class="kv" id="pKv"></dl>
+        <div class="spark-wrap"><div class="spark-k">Last 14 days &middot; <span class="hl">24 h</span> chance</div><svg id="pSpark" class="spark" role="img" aria-label="Chance of extreme rain over the last 14 days"></svg></div>
       </div>
       <div class="well">
         <div class="step-n">2 &middot; Impact <span class="tag rule">Your inputs &times; model</span></div>
@@ -379,6 +391,7 @@
         <div><span class="lvl-chip" id="iLevel">&ndash;</span></div>
         <dl class="kv" id="iKv"></dl>
         <ul class="why-list" id="iWhy"></ul>
+        <div class="spark-wrap"><div class="spark-k" id="iBarK">Expected share of exposure hit</div><div class="xbar"><i id="iBar"></i></div><div class="spark-k" id="iBarV" style="text-align:right"></div></div>
       </div>
       <div class="well">
         <div class="step-n">3 &middot; Act <span class="tag rule">Decision rule</span></div>
@@ -499,6 +512,7 @@
         <p class="hint">Drives structural risk. Trends are per year, from Sentinel-2 satellite data.</p>
         <div class="chips" id="landPresets" role="group" aria-label="Land-use scenarios"></div>
         <div id="landSliders"></div>
+        <div class="land-sum" id="landSum"></div>
       </div>
     </div>
     <div class="gauges">
@@ -600,8 +614,6 @@
         <h3 class="t" style="margin-top:18px">External check: 9 unseen places, a different data source</h3>
         <p class="note" style="margin:0 0 8px">ERA5 weather (Open-Meteo), never used in training. Places: Shimla, Darjeeling, Gangtok, Srinagar, Itanagar, Dehradun, Mumbai, Mangaluru, Guwahati. Scored 2022&ndash;2024.</p>
         <table><thead><tr><th>Model</th><th>ROC-AUC</th><th>PR-AUC</th><th>Brier</th><th>Mean P vs. observed</th></tr></thead><tbody id="xtab"></tbody></table>
-        <h3 class="t" style="margin-top:18px">Recorded disasters in the test years</h3>
-        <table><thead><tr><th>Site</th><th>Date</th><th>Peak P, 3 days before</th><th>Alert?</th></tr></thead><tbody id="etab"></tbody></table>
       </div>
       <div>
         <h3 class="t">Structural model: what raises risk</h3>
@@ -610,6 +622,8 @@
         <h3 class="t" style="margin-top:18px">72 h model: what drives the forecast</h3>
         <p class="note" style="margin:0 0 10px">Drop in PR-AUC when each feature is shuffled (test years).</p>
         <div id="pi"></div>
+        <h3 class="t" style="margin-top:18px">Recorded disasters in the test years</h3>
+        <table><thead><tr><th>Site</th><th>Date</th><th>Peak P, 3 days before</th><th>Alert?</th></tr></thead><tbody id="etab"></tbody></table>
       </div>
     </div>
   </section>
@@ -801,7 +815,7 @@ function fillStatic() {
     ["Collect", `Daily weather 1995–2025 from NASA POWER for ${S.sites.length} sites across hills, coasts and plains, plus Sentinel-2 land change and SRTM terrain.`],
     ["Engineer", "Rolling rainfall (1–30 days), rain acceleration, humidity, pressure tendency, season, slope, vegetation and construction trends. Only past data per day."],
     ["Learn: where", `Structural model (logistic regression) learns which land is fragile from ${rk.n_sites_real} real sites. Leave-one-out ${rk.loocv.correct}/${rk.loocv.total}.`],
-    ["Learn: when", `Three rain models (24, 48 and 72 h windows, monotonic gradient boosting) learn which conditions precede extreme rain. ${res.n_train.toLocaleString()} training site-days, tested on ${res.n_test.toLocaleString()} unseen. A longer window is never less likely than a shorter one.`],
+    ["Learn: when", `Three rain models (24, 48 and 72 h windows, monotonic gradient boosting) learn which conditions precede extreme rain. ${res.n_train.toLocaleString()} training site-days, tested on ${res.n_test.toLocaleString()} unseen. `],
     ["Predict → Impact → Act", "The forecast meets your operations profile: exposure × probability gives the impact, and \"act when probability > cost ÷ loss\" gives the decision. Rules, published on the page, not a hidden model."]
   ].map(([h, p]) => `<div class="well"><h4>${h}</h4><p>${p}</p></div>`).join("");
   $("stats").innerHTML = [
@@ -1046,6 +1060,11 @@ function recalc() {
   $("cSV").innerHTML = `<span style="color:${lvlColor(sp)}">${pct(sp)}</span>`;
   $("cSD").innerHTML = `${level(sp)}. ` + (Math.abs(dlt) < 0.5 ? "Same as measured." : `<span class="delta ${dlt > 0 ? "up" : "down"}">${dlt > 0 ? "+" : ""}${dlt.toFixed(0)} pts</span> vs. this site as measured (${pct(sm)}).`);
   C.sp = sp;
+  const bar = (v, col) => `<div class="bar2"><i style="width:${(v * 100).toFixed(1)}%;background:${col}"></i></div>`;
+  $("landSum").innerHTML = `<b>What your land changes did</b>
+    <div class="row2"><span>As measured</span>${bar(sm, "var(--muted-dot)")}<span>${pct(sm)}</span></div>
+    <div class="row2"><span>With your sliders</span>${bar(sp, lvlFill(sp))}<span>${pct(sp)}</span></div>
+    <div class="note" style="margin-top:6px">${Math.abs(dlt) < 0.5 ? "Move the vegetation or construction sliders to see how land use changes structural risk." : dlt > 0 ? `Your changes raise structural risk by ${dlt.toFixed(0)} points.` : `Your changes lower structural risk by ${Math.abs(dlt).toFixed(0)} points.`}</div>`;
   // 72 h: trained model on the server, debounced
   clearTimeout(C.timer);
   C.timer = setTimeout(async () => {
@@ -1276,6 +1295,16 @@ function renderDecision(d, siteId) {
     (v == null ? "This ratio is outside the range we could test." : v.value > 0.05 ? `On 2022–25 test data, following this rule with the ${H} h forecast captured <b>${pct(v.value)}</b> of perfect-foresight savings versus the best fixed policy.` :
       `At this ratio the ${H} h forecast adds little over a fixed policy on test data (value ${pct(Math.max(0, v.value))}); consider simply ${ratio < S.hz.windows[String(H)].test_positive_rate ? "always protecting" : "not protecting"}.`) +
     (P.edited ? "" : " <i>Example profile: edit it below.</i>");
+  // sparkline: this window's chance over the last 14 days (alert days in red)
+  (() => { const el = $("pSpark"), R = d.rows.slice(-14), W = Math.max(200, el.clientWidth || 300), Hh = 56, n = R.length;
+    const mx = Math.max(d.threshold * 1.4, ...R.map(r => r.prob_extreme_rain_next_3d)), x = i => 4 + i * (W - 8) / Math.max(1, n - 1), y = v => Hh - 6 - v / mx * (Hh - 12);
+    let sv = `<line x1="0" x2="${W}" y1="${y(d.threshold)}" y2="${y(d.threshold)}" stroke="var(--danger)" stroke-dasharray="3 3" opacity=".6"/>`;
+    sv += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${R.map((r, i) => x(i).toFixed(1) + "," + y(r.prob_extreme_rain_next_3d).toFixed(1)).join(" ")}"/>`;
+    R.forEach((r, i) => { if (r.alert) sv += `<circle cx="${x(i)}" cy="${y(r.prob_extreme_rain_next_3d)}" r="3" fill="var(--danger)"><title>${r.date}: ${pct(r.prob_extreme_rain_next_3d, 1)}</title></circle>`; });
+    el.setAttribute("viewBox", `0 0 ${W} ${Hh}`); el.innerHTML = sv; })();
+  $("iBar").style.width = Math.min(100, p * 100) + "%";
+  $("iBarK").textContent = `Expected share of your ${B.unitShort} hit`;
+  $("iBarV").textContent = `${pct(p, p < 0.1 ? 1 : 0)} of ${P.units.toLocaleString("en-IN")}`;
   PLAN = { P, H, site: site ? site.name : $("siteName").textContent, date: last.date, p, rr, br, dec, recs: recs.slice(0, 3), level: LV[0], expUnits, expLoss, B, ratio };
   drawValueCurve();
 }
