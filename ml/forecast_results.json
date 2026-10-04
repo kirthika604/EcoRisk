@@ -1,0 +1,363 @@
+{
+  "horizon_days": 7,
+  "alert_rate_target": 0.01,
+  "validation": "leave-one-site-out; threshold set on training sites only",
+  "n_site_days": 240922,
+  "n_positive_days": 119,
+  "n_sites": 22,
+  "rainfall_only": {
+    "roc_auc": 0.6712,
+    "pr_auc": 0.0012,
+    "pr_auc_chance": 0.00049,
+    "events_total": 17,
+    "events_alerted": 4,
+    "false_alert_days_per_site_year": 3.81,
+    "events": [
+      {
+        "site_id": "chennai",
+        "event_date": "2023-12-04",
+        "alerted": true,
+        "lead_days": 5,
+        "peak_pre_event_prob": 0.8051,
+        "peak_percentile_in_site_history": 99.4
+      },
+      {
+        "site_id": "dharali",
+        "event_date": "2025-08-01",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7455,
+        "peak_percentile_in_site_history": 97.4
+      },
+      {
+        "site_id": "guna",
+        "event_date": "2025-07-30",
+        "alerted": true,
+        "lead_days": 6,
+        "peak_pre_event_prob": 0.8185,
+        "peak_percentile_in_site_history": 99.7
+      },
+      {
+        "site_id": "jakhau",
+        "event_date": "2023-06-15",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7013,
+        "peak_percentile_in_site_history": 98.0
+      },
+      {
+        "site_id": "joshimath",
+        "event_date": "2023-01-02",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.1295,
+        "peak_percentile_in_site_history": 9.5
+      },
+      {
+        "site_id": "kedarnath",
+        "event_date": "2013-06-16",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7773,
+        "peak_percentile_in_site_history": 99.2
+      },
+      {
+        "site_id": "kinnaur",
+        "event_date": "2021-08-11",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.6925,
+        "peak_percentile_in_site_history": 95.2
+      },
+      {
+        "site_id": "malpa",
+        "event_date": "1998-08-18",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.5662,
+        "peak_percentile_in_site_history": 87.9
+      },
+      {
+        "site_id": "nagapattinam",
+        "event_date": "2018-11-16",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.735,
+        "peak_percentile_in_site_history": 96.2
+      },
+      {
+        "site_id": "odisha_coast",
+        "event_date": "2019-05-03",
+        "alerted": true,
+        "lead_days": 1,
+        "peak_pre_event_prob": 0.8383,
+        "peak_percentile_in_site_history": 99.3
+      },
+      {
+        "site_id": "pettimudi",
+        "event_date": "2020-08-06",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7722,
+        "peak_percentile_in_site_history": 93.7
+      },
+      {
+        "site_id": "raini",
+        "event_date": "2021-02-07",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.467,
+        "peak_percentile_in_site_history": 75.8
+      },
+      {
+        "site_id": "silchar",
+        "event_date": "2022-06-19",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.797,
+        "peak_percentile_in_site_history": 92.1
+      },
+      {
+        "site_id": "sundarbans",
+        "event_date": "2020-05-20",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7764,
+        "peak_percentile_in_site_history": 93.0
+      },
+      {
+        "site_id": "visakhapatnam",
+        "event_date": "2014-10-12",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7228,
+        "peak_percentile_in_site_history": 94.6
+      },
+      {
+        "site_id": "wayanad",
+        "event_date": "2024-07-30",
+        "alerted": true,
+        "lead_days": 1,
+        "peak_pre_event_prob": 0.8308,
+        "peak_percentile_in_site_history": 99.7
+      },
+      {
+        "site_id": "wazri",
+        "event_date": "2017-09-12",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.6792,
+        "peak_percentile_in_site_history": 89.2
+      }
+    ]
+  },
+  "rainfall_plus_land": {
+    "roc_auc": 0.6502,
+    "pr_auc": 0.0011,
+    "pr_auc_chance": 0.00049,
+    "events_total": 17,
+    "events_alerted": 4,
+    "false_alert_days_per_site_year": 5.12,
+    "events": [
+      {
+        "site_id": "chennai",
+        "event_date": "2023-12-04",
+        "alerted": true,
+        "lead_days": 1,
+        "peak_pre_event_prob": 0.8634,
+        "peak_percentile_in_site_history": 99.4
+      },
+      {
+        "site_id": "dharali",
+        "event_date": "2025-08-01",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.8324,
+        "peak_percentile_in_site_history": 97.0
+      },
+      {
+        "site_id": "guna",
+        "event_date": "2025-07-30",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.5158,
+        "peak_percentile_in_site_history": 99.9
+      },
+      {
+        "site_id": "jakhau",
+        "event_date": "2023-06-15",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.5631,
+        "peak_percentile_in_site_history": 97.7
+      },
+      {
+        "site_id": "joshimath",
+        "event_date": "2023-01-02",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.1456,
+        "peak_percentile_in_site_history": 9.5
+      },
+      {
+        "site_id": "kedarnath",
+        "event_date": "2013-06-16",
+        "alerted": true,
+        "lead_days": 1,
+        "peak_pre_event_prob": 0.8623,
+        "peak_percentile_in_site_history": 99.8
+      },
+      {
+        "site_id": "kinnaur",
+        "event_date": "2021-08-11",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.8383,
+        "peak_percentile_in_site_history": 94.4
+      },
+      {
+        "site_id": "malpa",
+        "event_date": "1998-08-18",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.6467,
+        "peak_percentile_in_site_history": 86.1
+      },
+      {
+        "site_id": "nagapattinam",
+        "event_date": "2018-11-16",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7484,
+        "peak_percentile_in_site_history": 95.5
+      },
+      {
+        "site_id": "odisha_coast",
+        "event_date": "2019-05-03",
+        "alerted": true,
+        "lead_days": 1,
+        "peak_pre_event_prob": 0.8934,
+        "peak_percentile_in_site_history": 99.3
+      },
+      {
+        "site_id": "pettimudi",
+        "event_date": "2020-08-06",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.8559,
+        "peak_percentile_in_site_history": 96.1
+      },
+      {
+        "site_id": "raini",
+        "event_date": "2021-02-07",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.3917,
+        "peak_percentile_in_site_history": 76.8
+      },
+      {
+        "site_id": "silchar",
+        "event_date": "2022-06-19",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.6784,
+        "peak_percentile_in_site_history": 98.1
+      },
+      {
+        "site_id": "sundarbans",
+        "event_date": "2020-05-20",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.8067,
+        "peak_percentile_in_site_history": 93.0
+      },
+      {
+        "site_id": "visakhapatnam",
+        "event_date": "2014-10-12",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.8155,
+        "peak_percentile_in_site_history": 94.1
+      },
+      {
+        "site_id": "wayanad",
+        "event_date": "2024-07-30",
+        "alerted": true,
+        "lead_days": 1,
+        "peak_pre_event_prob": 0.8959,
+        "peak_percentile_in_site_history": 99.4
+      },
+      {
+        "site_id": "wazri",
+        "event_date": "2017-09-12",
+        "alerted": false,
+        "lead_days": null,
+        "peak_pre_event_prob": 0.7887,
+        "peak_percentile_in_site_history": 90.7
+      }
+    ]
+  },
+  "final_model": {
+    "features": [
+      "rain_1d",
+      "rain_3d",
+      "rain_7d",
+      "rain_14d",
+      "rain_30d",
+      "rain_7d_anom",
+      "ndvi_trend_slope",
+      "ndbi_trend_slope",
+      "mean_slope_degrees",
+      "elevation_mean_m",
+      "terrain_is_coastal"
+    ],
+    "log1p_features": [
+      "rain_1d",
+      "rain_3d",
+      "rain_7d",
+      "rain_14d",
+      "rain_30d"
+    ],
+    "coefficients": [
+      0.471,
+      0.1252,
+      -0.0259,
+      0.4487,
+      -0.0757,
+      -0.0056,
+      -0.1069,
+      0.2954,
+      0.9346,
+      -0.4463,
+      0.5677
+    ],
+    "intercept": -0.5028,
+    "scaler_mean": [
+      0.738168,
+      1.309762,
+      1.959347,
+      2.633087,
+      3.493935,
+      2.080641,
+      0.008489,
+      0.007095,
+      14.502727,
+      1126.972727,
+      0.363636
+    ],
+    "scaler_scale": [
+      1.025267,
+      1.417111,
+      1.682954,
+      1.816046,
+      1.830212,
+      32.208004,
+      0.010962,
+      0.023234,
+      12.413859,
+      1236.677894,
+      0.481046
+    ],
+    "alert_threshold": 0.8566
+  }
+}

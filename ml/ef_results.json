@@ -1,0 +1,228 @@
+{
+  "split": {
+    "train": "1995-2018",
+    "validation": "2019-2021",
+    "test": "2022-2025"
+  },
+  "target": "extreme-rainfall day (>= site's train-years 99th pct) within next 3 days",
+  "n_train": 192214,
+  "n_val": 24112,
+  "n_test": 32076,
+  "test_positive_rate": 0.0335,
+  "models": {
+    "climatology": {
+      "roc_auc": 0.7915,
+      "pr_auc": 0.0904,
+      "brier": 0.03127,
+      "precision": 0.1144,
+      "recall": 0.4726,
+      "alert_rate": 0.1384,
+      "threshold_from_validation": 0.0583,
+      "val_roc_auc": 0.733
+    },
+    "persistence": {
+      "roc_auc": 0.5735,
+      "pr_auc": 0.0857,
+      "brier": 0.03729,
+      "precision": 0.3676,
+      "recall": 0.1563,
+      "alert_rate": 0.0142,
+      "threshold_from_validation": 0.5,
+      "val_roc_auc": 0.5472
+    },
+    "logistic": {
+      "roc_auc": 0.8423,
+      "pr_auc": 0.1929,
+      "brier": 0.02953,
+      "precision": 0.206,
+      "recall": 0.4009,
+      "alert_rate": 0.0652,
+      "threshold_from_validation": 0.1018,
+      "val_roc_auc": 0.7851,
+      "brier_skill_vs_climatology": 0.0556
+    },
+    "grad_boost": {
+      "roc_auc": 0.8663,
+      "pr_auc": 0.2171,
+      "brier": 0.02901,
+      "precision": 0.2012,
+      "recall": 0.4698,
+      "alert_rate": 0.0783,
+      "threshold_from_validation": 0.1006,
+      "val_roc_auc": 0.8017,
+      "brier_skill_vs_climatology": 0.0723
+    }
+  },
+  "chosen_model": "grad_boost",
+  "permutation_importance_pr_auc_drop": [
+    {
+      "feature": "rain_1d",
+      "drop": 0.09565
+    },
+    {
+      "feature": "mean_slope_degrees",
+      "drop": 0.05077
+    },
+    {
+      "feature": "elevation_mean_m",
+      "drop": 0.02876
+    },
+    {
+      "feature": "t2m",
+      "drop": 0.01549
+    },
+    {
+      "feature": "rain_30d",
+      "drop": 0.01476
+    },
+    {
+      "feature": "ps_chg_1d",
+      "drop": 0.01022
+    },
+    {
+      "feature": "dew_spread",
+      "drop": 0.00945
+    },
+    {
+      "feature": "rh_chg_3d",
+      "drop": 0.00875
+    },
+    {
+      "feature": "doy_cos",
+      "drop": 0.00794
+    },
+    {
+      "feature": "rain_3d",
+      "drop": 0.00616
+    },
+    {
+      "feature": "ws2m",
+      "drop": 0.0051
+    },
+    {
+      "feature": "ps_chg_3d",
+      "drop": 0.00161
+    },
+    {
+      "feature": "rain_14d",
+      "drop": 0.00119
+    },
+    {
+      "feature": "doy_sin",
+      "drop": 0.0009
+    },
+    {
+      "feature": "rain_7d",
+      "drop": 0.00064
+    },
+    {
+      "feature": "terrain_is_coastal",
+      "drop": 0.00037
+    },
+    {
+      "feature": "rh2m",
+      "drop": 0.00035
+    },
+    {
+      "feature": "wet_days_7d",
+      "drop": 0.00016
+    },
+    {
+      "feature": "rain_accel",
+      "drop": -0.00143
+    },
+    {
+      "feature": "ps_anom",
+      "drop": -0.00212
+    }
+  ],
+  "calibration_test": [
+    {
+      "bin": "[0.0, 0.02)",
+      "n": 20464,
+      "mean_predicted": 0.0053,
+      "observed_rate": 0.0057
+    },
+    {
+      "bin": "[0.02, 0.05)",
+      "n": 5914,
+      "mean_predicted": 0.032,
+      "observed_rate": 0.0358
+    },
+    {
+      "bin": "[0.05, 0.1)",
+      "n": 3163,
+      "mean_predicted": 0.0711,
+      "observed_rate": 0.0756
+    },
+    {
+      "bin": "[0.1, 0.2)",
+      "n": 1860,
+      "mean_predicted": 0.1354,
+      "observed_rate": 0.1538
+    },
+    {
+      "bin": "[0.2, 0.4)",
+      "n": 534,
+      "mean_predicted": 0.2673,
+      "observed_rate": 0.3127
+    },
+    {
+      "bin": "[0.4, 1.0)",
+      "n": 141,
+      "mean_predicted": 0.5204,
+      "observed_rate": 0.3901
+    }
+  ],
+  "recorded_event_backtest": [
+    {
+      "site_id": "chennai",
+      "event_date": "2023-12-04",
+      "peak_prob_3d_before": 0.5758,
+      "alert_raised": true,
+      "percentile_in_site_test_history": 99.7
+    },
+    {
+      "site_id": "dharali",
+      "event_date": "2025-08-01",
+      "peak_prob_3d_before": 0.1164,
+      "alert_raised": true,
+      "percentile_in_site_test_history": 92.8
+    },
+    {
+      "site_id": "guna",
+      "event_date": "2025-07-30",
+      "peak_prob_3d_before": 0.3471,
+      "alert_raised": true,
+      "percentile_in_site_test_history": 99.0
+    },
+    {
+      "site_id": "jakhau",
+      "event_date": "2023-06-15",
+      "peak_prob_3d_before": 0.5508,
+      "alert_raised": true,
+      "percentile_in_site_test_history": 98.3
+    },
+    {
+      "site_id": "joshimath",
+      "event_date": "2023-01-02",
+      "peak_prob_3d_before": 0.0057,
+      "alert_raised": false,
+      "percentile_in_site_test_history": 47.5
+    },
+    {
+      "site_id": "silchar",
+      "event_date": "2022-06-19",
+      "peak_prob_3d_before": 0.3505,
+      "alert_raised": true,
+      "percentile_in_site_test_history": 98.7
+    },
+    {
+      "site_id": "wayanad",
+      "event_date": "2024-07-30",
+      "peak_prob_3d_before": 0.3177,
+      "alert_raised": true,
+      "percentile_in_site_test_history": 99.9
+    }
+  ]
+}

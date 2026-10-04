@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoRisk AI</title>
+<style>
+  :root {
+    /* EcoRisk AI, warm mid-tone: deeper cream ground, plum-black ink, field green, slate, earth
+       brown. Red / yellow / amber are muted and reserved for risk states. */
+    --bg: #DEDAD0;          /* 236,235,228 deepened */
+    --panel: #E9E6DE;
+    --panel-well: #DCD7CC;
+    --panel-border: #C5BCAD;
+    --brown: #553733;       /* 85,55,51  */
+    --text: #1C0F13;        /* 28,15,19  */
+    --text-dim: #574D4A;
+    --accent: #3A803A;      /* 85,161,85 deepened for contrast */
+    --green: #55A155;       /* 85,161,85 */
+    --slate: #4A6670;       /* 74,102,112 */
+    --slate-bright: #3F5962;
+    --bars: #8EA7AF;        /* slate rain bars */
+    --accent2: #B86A0E;     /* muted amber */
+    --danger: #BC3532;      /* muted red */
+    --warn: #A07800;        /* muted yellow (text-safe) */
+    --warn-fill: #E2B93B;
+    --ok: #3A803A;
+    --muted-dot: #8D827C;
+    --track: #CDC6B8;
+    --row-line: #D3CCBF;
+    --land: #A9BBBF;        /* slate-tinted land: stands clear of the cream panel */
+    --land-edge: #5F7A82;
+    --on-accent: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    font-size: 15px;
+  }
+  .num { font-variant-numeric: tabular-nums; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* ---------- header ---------- */
+  header { position: relative; border-bottom: 1px solid var(--panel-border);
+           background: radial-gradient(900px 320px at 8% -20%, rgba(85,55,51,0.16), transparent 70%),
+                       radial-gradient(700px 280px at 95% 0%, rgba(85,161,85,0.16), transparent 70%),
+                       radial-gradient(600px 240px at 60% 120%, rgba(74,102,112,0.14), transparent 70%), var(--bg); }
+  header::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; opacity: .75;
+                  background: linear-gradient(90deg, var(--green), var(--warn-fill) 50%, var(--accent2) 75%, var(--danger)); }
+  .brand { display: inline-flex; align-items: center; gap: 10px; }
+  .brand svg { width: 34px; height: 34px; flex: none; }
+  header h1 { font-size: 26px; letter-spacing: -0.02em; }
+  header h1 span { color: var(--accent); }
+  ::selection { background: rgba(85,161,85,0.35); color: var(--text); }
+  .head-inner { max-width: 1160px; margin: 0 auto; padding: 22px 24px 18px; }
+  .brand-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  header h1 { margin: 0; font-size: 22px; letter-spacing: -0.01em; }
+  .ps { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+        color: var(--text-dim); border: 1px solid var(--panel-border); border-radius: 4px; padding: 3px 8px; }
+  .thesis { margin: 10px 0 0; max-width: 820px; color: var(--text-dim); font-size: 16px; line-height: 1.6; }
+  .thesis b { color: var(--text); font-weight: 600; }
+  nav { display: flex; gap: 6px 18px; flex-wrap: wrap; margin-top: 14px; font-size: 13px; }
+  nav a { color: var(--text-dim); text-decoration: none; border-bottom: 1px solid transparent; padding-bottom: 2px; }
+  nav a:hover { color: var(--text); border-bottom-color: var(--panel-border); }
+  nav a.ext::after { content: " \2197"; }
+
+  main { max-width: 1160px; margin: 0 auto; padding: 24px; display: flex; flex-direction: column; gap: 22px; }
+  .panel { background: var(--panel); border: 1px solid var(--panel-border); border-radius: 10px; padding: 20px; }
+  .panel > h2 { margin: 0 0 6px; font-size: 16px; line-height: 1.5; }
+  .panel > h2 .tag { margin-left: 6px; vertical-align: 2px; }
+  .step { color: var(--accent); font-weight: 700; font-size: 13px; }
+  .sub { color: var(--text-dim); font-size: 13px; margin: 0 0 16px; max-width: 820px; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.04em; padding: 2px 7px;
+         border-radius: 4px; text-transform: uppercase; border: 1px solid; }
+  .tag.real { color: var(--accent); background: rgba(85,161,85,0.15); border-color: rgba(85,161,85,0.4); }
+  .tag.live { color: var(--slate-bright); background: rgba(74,102,112,0.15); border-color: rgba(74,102,112,0.4); }
+  .tag.rule { color: var(--accent2); background: rgba(199,122,26,0.15); border-color: rgba(199,122,26,0.4); }
+
+  /* ---------- outlook ---------- */
+  .outlook { display: grid; grid-template-columns: minmax(260px, 340px) 1fr; gap: 20px; }
+  @media (max-width: 820px) { .outlook { grid-template-columns: minmax(0, 1fr); } }
+  .outlook > *, .unseen > *, .cols > * { min-width: 0; }
+  @media (max-width: 560px) {
+    .head-inner { padding: 18px 16px 14px; } main { padding: 16px; gap: 16px; } .panel { padding: 14px; }
+    footer { padding: 0 16px 32px; } .thesis { font-size: 15px; }
+    .controls { width: 100%; } .controls label.f { flex: 1 1 140px; } .controls select, .controls input { width: 100%; }
+    .ro .v { font-size: 24px; } .fi { grid-template-columns: 110px 1fr 44px; }
+    .map-wrap { max-width: 340px; margin: 0 auto; }
+    #validation table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    #validation th, #validation td { white-space: nowrap; }
+    .lvl.cur { order: -1; } .levels { display: flex; flex-direction: column; }
+    .gauge { grid-template-columns: 96px 1fr; gap: 10px; padding: 12px; } .gauge svg { width: 96px; height: 58px; } .gauge .gv { font-size: 26px; }
+  }
+  .well { background: var(--panel-well); border: 1px solid var(--panel-border); border-radius: 8px; }
+  .map-wrap { padding: 10px; }
+  #map { width: 100%; height: auto; display: block; }
+  #map path.india { fill: var(--land); stroke: var(--land-edge); stroke-width: 1.4; stroke-linejoin: round; }
+  #map circle { cursor: pointer; stroke: #F6F4EE; stroke-width: 2; }
+  #map circle:hover { stroke: var(--text); }
+  #map circle.sel { stroke: var(--text); stroke-width: 2.5; }
+  .legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 11px; color: var(--text-dim); padding: 4px 6px 2px; }
+  .legend i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 5px; vertical-align: -1px; }
+
+  .site-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
+  .site-head h3 { margin: 0; font-size: 19px; }
+  .site-meta { color: var(--text-dim); font-size: 13px; margin-top: 2px; }
+  .controls { display: flex; gap: 8px; align-items: end; flex-wrap: wrap; }
+  label.f { display: flex; flex-direction: column; gap: 4px; font-size: 11px; color: var(--text-dim);
+            text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; }
+  select, input, textarea {
+    font: inherit; font-size: 14px; color: var(--text); background: var(--panel-well);
+    border: 1px solid var(--panel-border); border-radius: 6px; padding: 7px 9px; }
+  input[type=date] { color-scheme: light; }
+  select, input { max-width: 100%; min-width: 0; } label.f { min-width: 0; }
+  button { font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; border-radius: 6px; padding: 8px 14px;
+           background: var(--accent); color: var(--on-accent); border: 1px solid var(--accent); }
+  button.sec { background: transparent; color: var(--text); border-color: var(--panel-border); }
+  button.sec:hover { border-color: var(--text-dim); }
+  button:disabled { opacity: .5; cursor: progress; }
+
+  .readouts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin: 16px 0 12px; }
+  .ro { padding: 14px; }
+  .ro .k { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-dim); }
+  .ro .v { font-size: 28px; font-weight: 700; margin-top: 4px; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .ro .d { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+  .meter { height: 6px; background: var(--track); border-radius: 3px; position: relative; margin-top: 10px; }
+  .meter i { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+  .meter u { position: absolute; top: -3px; bottom: -3px; width: 2px; background: var(--text); }
+  .odd { border: 1px dashed var(--accent2); color: var(--accent2); background: rgba(199,122,26,0.07); border-radius: 8px;
+         padding: 10px 14px; font-size: 13px; margin-bottom: 12px; }
+  .verdict { padding: 14px 16px; border-left: 3px solid var(--accent); }
+  .verdict.hot { border-left-color: var(--danger); }
+  .verdict.watch { border-left-color: var(--warn); }
+  .verdict .vk { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-dim); }
+  .verdict .vt { font-size: 17px; font-weight: 700; margin: 2px 0; }
+  .verdict .vd { font-size: 13px; color: var(--text-dim); }
+
+  .chart-box { margin-top: 12px; padding: 12px 12px 6px; }
+  .chart-title { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px; font-size: 12px; color: var(--text-dim); }
+  .chart-title .key > span { margin-left: 12px; }
+  .chart-title .key i { display: inline-block; width: 12px; height: 3px; vertical-align: middle; margin-right: 5px; }
+  #chart { width: 100%; height: 230px; display: block; }
+  .drivers { margin-top: 12px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+  .drivers .well { padding: 12px 14px; }
+  .drivers h4 { margin: 0 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-dim); }
+  .drv { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; font-size: 13px; }
+  .drv .n { color: var(--text-dim); font-variant-numeric: tabular-nums; }
+  .note { color: var(--text-dim); font-size: 12px; }
+  .err { color: var(--danger); font-size: 13px; min-height: 1em; margin-top: 8px; }
+  .empty { color: var(--text-dim); font-size: 13px; padding: 40px 0; text-align: center; }
+
+  /* ---------- pipeline ---------- */
+  .pipe { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; counter-reset: s; }
+  .pipe .well { padding: 14px; }
+  .pipe .well::before { counter-increment: s; content: "0" counter(s); font-size: 11px; font-weight: 700; color: var(--accent); letter-spacing: 0.04em; }
+  .pipe h4 { margin: 4px 0 6px; font-size: 14px; }
+  .pipe p { margin: 0; font-size: 13px; color: var(--text-dim); }
+
+  /* ---------- unseen ---------- */
+  .unseen { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 820px) { .unseen { grid-template-columns: minmax(0, 1fr); } }
+  textarea { width: 100%; min-height: 150px; font-family: ui-monospace, Menlo, monospace; font-size: 12px; resize: vertical; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+  .hide { display: none !important; }
+
+  /* ---------- validation ---------- */
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 18px; }
+  .stat { padding: 14px; }
+  .stat .v { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .v.bad { color: var(--danger); }
+  .stat .l { font-size: 12px; color: var(--text-dim); }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 820px) { .cols { grid-template-columns: minmax(0, 1fr); } }
+  h3.t { font-size: 13px; margin: 0 0 8px; font-weight: 700; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+  th { text-align: left; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; color: var(--text-dim);
+       padding: 6px 8px; border-bottom: 1px solid var(--panel-border); }
+  td { padding: 7px 8px; border-bottom: 1px solid var(--row-line); }
+  tr.best td { color: var(--accent); font-weight: 600; }
+  .yes { color: var(--ok); font-weight: 600; } .no { color: var(--danger); font-weight: 600; }
+  .fi { display: grid; grid-template-columns: 150px 1fr 48px; gap: 8px; align-items: center; font-size: 12px; margin-bottom: 6px; }
+  .fi .bar { height: 8px; background: var(--track); border-radius: 3px; position: relative; }
+  .fi .bar i { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+  .fi .bar u { position: absolute; left: 50%; top: -2px; bottom: -2px; width: 1px; background: var(--text-dim); }
+  ul.limits { margin: 0; padding-left: 18px; color: var(--text-dim); font-size: 13px; }
+  ul.limits li { margin-bottom: 6px; } ul.limits b { color: var(--text); font-weight: 600; }
+  /* ---------- sticky nav ---------- */
+  .navbar { position: sticky; top: 0; z-index: 10; background: rgba(222,218,208,0.93); backdrop-filter: blur(6px);
+            border-bottom: 1px solid var(--panel-border); }
+  .navbar nav { max-width: 1160px; margin: 0 auto; padding: 10px 24px; margin-top: 0; overflow-x: auto; flex-wrap: nowrap; white-space: nowrap; scrollbar-width: none; }
+  .navbar nav a.on { color: var(--text); border-bottom-color: var(--accent); }
+  .cta { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+  .cta a { text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px; padding: 9px 14px; border: 1px solid var(--panel-border); color: var(--text); }
+  .cta a.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+  .cta a.primary:hover { background: #357735; border-color: #357735; }
+  #dGo:hover, #replay:hover, #run:hover { background: #357735; border-color: #357735; }
+  .cta a:hover { border-color: var(--text-dim); }
+  .hero-stats { display: flex; gap: 28px; flex-wrap: wrap; margin-top: 18px; }
+  .hero-stats div { font-size: 12px; color: var(--text-dim); }
+  .hero-stats b { display: block; font-size: 24px; color: var(--text); font-variant-numeric: tabular-nums; }
+  .hero-stats div:nth-child(1) b { color: var(--accent); } .hero-stats div:nth-child(2) b { color: var(--slate-bright); }
+  .hero-stats div:nth-child(3) b { color: var(--warn); } .hero-stats div:nth-child(4) b { color: var(--danger); }
+
+  /* ---------- calculator ---------- */
+  .calc { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  @media (max-width: 900px) { .calc { grid-template-columns: minmax(0, 1fr); } }
+  .calc > * { min-width: 0; }
+  .calc .well { padding: 16px; }
+  .calc h3 { margin: 0; font-size: 15px; }
+  .calc .hint { font-size: 12px; color: var(--text-dim); margin: 2px 0 12px; }
+  .chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 14px; }
+  .chip { font-size: 12px; font-weight: 600; padding: 5px 10px; border-radius: 6px; background: transparent; color: var(--text-dim); border: 1px solid var(--panel-border); }
+  .chip:hover { color: var(--text); border-color: var(--text-dim); }
+  .chip.on { color: var(--accent); border-color: var(--accent); background: rgba(85,161,85,0.08); }
+  .sl { margin-bottom: 12px; }
+  .sl .top { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+  .sl .top output { font-variant-numeric: tabular-nums; color: var(--text); font-weight: 600; }
+  .sl .ends { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-dim); margin-top: 1px; }
+  input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; padding: 0; border: 0; }
+  input[type=range]::-webkit-slider-runnable-track { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--accent) var(--fill, 50%), var(--track) var(--fill, 50%)); }
+  input[type=range]::-moz-range-track { height: 4px; border-radius: 2px; background: var(--track); }
+  input[type=range]::-moz-range-progress { height: 4px; border-radius: 2px; background: var(--accent); }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: var(--text); margin-top: -6px; border: 2px solid var(--bg); }
+  input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--text); border: 2px solid var(--bg); }
+  .gauges { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-top: 16px; }
+  .gauge { padding: 14px 16px; display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; }
+  .gauge svg { width: 120px; height: 72px; }
+  .gauge .gk { font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-dim); }
+  .gauge .gv { font-size: 30px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .gauge .gd { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+  .delta.up { color: var(--danger); } .delta.down { color: var(--ok); }
+  .why { margin-top: 12px; font-size: 13px; color: var(--text-dim); }
+  .why b { color: var(--text); font-weight: 600; }
+
+  /* ---------- awareness ---------- */
+  .levels { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .lvl { padding: 14px 16px; border-top: 3px solid var(--panel-border); opacity: .55; transition: opacity .2s; }
+  .lvl.cur { opacity: 1; }
+  .lvl.g { border-top-color: var(--green); } .lvl.y { border-top-color: var(--warn-fill); } .lvl.r { border-top-color: var(--danger); }
+  .lvl h4 { margin: 0 0 2px; font-size: 14px; display: flex; justify-content: space-between; gap: 8px; }
+  .lvl .you { font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--bg); background: var(--text); border-radius: 4px; padding: 1px 6px; display: none; }
+  .lvl.cur .you { display: inline-block; }
+  .lvl p { margin: 0 0 8px; font-size: 12px; color: var(--text-dim); }
+  .lvl ul, .signs ul { margin: 0; padding-left: 18px; font-size: 13px; } .lvl li, .signs li { margin-bottom: 4px; }
+  .signs { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; margin-top: 16px; }
+  .signs .well { padding: 14px 16px; }
+  .signs h4 { margin: 0 0 8px; font-size: 14px; }
+  .help { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-top: 16px; }
+  .help a { text-decoration: none; color: var(--text); padding: 12px; text-align: center; }
+  .help b { display: block; font-size: 24px; font-variant-numeric: tabular-nums; color: var(--accent); }
+  .help span { font-size: 12px; color: var(--text-dim); }
+  .human { margin-top: 16px; padding: 16px; display: grid; grid-template-columns: 1fr auto; gap: 12px; align-items: center; }
+  @media (max-width: 640px) { .human { grid-template-columns: 1fr; } }
+  .human .big { font-size: 15px; } .human .big b { font-variant-numeric: tabular-nums; }
+  .quiz { margin-top: 16px; padding: 16px; }
+  .quiz .q { font-weight: 600; margin: 0 0 10px; }
+  .quiz .opts { display: flex; flex-direction: column; gap: 8px; }
+  .quiz .opts button { text-align: left; background: var(--panel); color: var(--text); border: 1px solid var(--panel-border); font-weight: 400; }
+  .quiz .opts button:hover:not(:disabled) { border-color: var(--text-dim); }
+  .quiz .opts button.right { border-color: var(--ok); color: var(--ok); opacity: 1; }
+  .quiz .opts button.wrong { border-color: var(--danger); color: var(--danger); opacity: 1; }
+  .quiz .fb { font-size: 13px; color: var(--text-dim); margin-top: 10px; min-height: 1.2em; }
+  .quiz .qfoot { display: flex; justify-content: space-between; align-items: center; margin-top: 12px; font-size: 12px; color: var(--text-dim); }
+  .share { margin-top: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+  .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 14px;
+           border-radius: 6px; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity .2s; pointer-events: none; z-index: 20; }
+  .toast.show { opacity: 1; }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; scroll-behavior: auto !important; } }
+  html { scroll-behavior: smooth; scroll-padding-top: 52px; }
+
+  /* ---------- decision center ---------- */
+  .dc-controls { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; margin-bottom: 16px; }
+  .seg { display: inline-flex; border: 1px solid var(--panel-border); border-radius: 6px; overflow: hidden; }
+  .seg button { background: transparent; color: var(--text-dim); border: 0; border-radius: 0; padding: 7px 14px; font-weight: 600; }
+  .seg button + button { border-left: 1px solid var(--panel-border); }
+  .seg button.on { background: rgba(85,161,85,0.14); color: var(--accent); }
+  .pia { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  @media (max-width: 900px) { .pia { grid-template-columns: minmax(0, 1fr); } }
+  .pia > .well { padding: 16px; display: flex; flex-direction: column; gap: 8px; position: relative; border-top: 2px solid var(--c, var(--accent)); }
+  .pia > .well:nth-child(1) { --c: var(--accent); } .pia > .well:nth-child(2) { --c: var(--warn-fill); } .pia > .well:nth-child(3) { --c: var(--danger); }
+  .pia > .well:nth-child(2) .step-n { color: var(--warn); } .pia > .well:nth-child(3) .step-n { color: var(--danger); }
+  .recs .ic { background: rgba(200,66,63,0.14) !important; color: var(--danger) !important; }
+  .pia .step-n { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--accent); display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .pia .q { font-size: 13px; color: var(--text-dim); margin-top: -4px; }
+  .pia .big { font-size: 34px; font-weight: 700; font-variant-numeric: tabular-nums; line-height: 1.1; }
+  .pia .lvl-chip { display: inline-block; font-size: 13px; font-weight: 700; padding: 3px 9px; border-radius: 4px; border: 1px solid; }
+  .kv { display: grid; grid-template-columns: auto 1fr; gap: 4px 12px; font-size: 13px; }
+  .kv dt { color: var(--text-dim); } .kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+  .why-list { margin: 0; padding-left: 16px; font-size: 12px; color: var(--text-dim); } .why-list li { margin-bottom: 2px; }
+  .decision { font-size: 20px; font-weight: 700; }
+  .recs { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+  .recs li { display: grid; grid-template-columns: 26px 1fr; gap: 8px; font-size: 13px; background: var(--panel); border: 1px solid var(--panel-border); border-radius: 6px; padding: 9px 10px; }
+  .recs .ic { width: 26px; height: 26px; border-radius: 6px; display: grid; place-items: center; font-weight: 700; font-size: 12px; background: rgba(85,161,85,0.12); color: var(--accent); }
+  .recs b { display: block; font-size: 13px; }
+  .recs span { color: var(--text-dim); font-size: 12px; }
+  .rule { font-size: 11px; color: var(--text-dim); border-top: 1px solid var(--panel-border); padding-top: 8px; margin-top: auto; }
+  details.profile { margin-top: 14px; }
+  details.profile summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--accent); list-style: none; }
+  details.profile summary::-webkit-details-marker { display: none; }
+  details.profile summary::before { content: "▸ "; } details.profile[open] summary::before { content: "▾ "; }
+  .pgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 12px; }
+  .pgrid label.chk { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--text); text-transform: none; letter-spacing: 0; font-weight: 400; }
+  .pgrid input[type=number], .pgrid input[type=text] { width: 100%; }
+  .vcurve { width: 100%; height: 180px; display: block; }
+
+  footer { max-width: 1160px; margin: 0 auto; padding: 0 24px 40px; color: var(--text-dim); font-size: 12px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="head-inner">
+    <div class="brand-row">
+      <span class="brand"><svg viewBox="0 0 34 34" aria-hidden="true">
+        <rect width="34" height="34" rx="8" fill="#E9E6DE" stroke="#C5BCAD"/>
+        <path d="M4 26 L12 14 L17 20 L22 11 L30 26 Z" fill="#55A155"/>
+        <path d="M22 11 L30 26 L24 26 Z" fill="#4A6670"/>
+        <path d="M25 4 C25 4 21.5 8.6 21.5 10.6 a3.5 3.5 0 0 0 7 0 C28.5 8.6 25 4 25 4 Z" fill="#C8423F"/>
+        <rect x="4" y="27.5" width="26" height="2" rx="1" fill="#EBC54A"/></svg>
+      <h1>EcoRisk <span>AI</span></h1></span>
+      <span class="ps">ALG-DATA-02 &middot; Predict what happens next</span>
+    </div>
+    <p class="thesis">Human activity weakens the land. Weather pulls the trigger. <b>EcoRisk AI learns both from 30 years of real satellite and weather data, then predicts what happens next at a site:</b> how fragile the ground is, and whether an extreme-rainfall trigger is coming in the next 24 to 72 hours, and what your operation should do about it.</p>
+    <div class="cta">
+      <a class="primary" href="#decide">Get a decision</a>
+      <a href="#outlook">Check a site</a>
+      <a href="#calc">Try the what-if calculator</a>
+      <a href="#aware">Stay safe</a>
+    </div>
+    <div class="hero-stats" id="heroStats"></div>
+  </div>
+</header>
+<div class="navbar">
+  <nav aria-label="Sections" id="nav">
+    <a href="#decide">Decide</a>
+    <a href="#outlook">Site outlook</a>
+    <a href="#calc">What-if calculator</a>
+    <a href="#unseen">Unseen data</a>
+    <a href="#aware">Stay safe</a>
+    <a href="#how">How it predicts</a>
+    <a href="#validation">Validation</a>
+    <a class="ext" href="/dashboard/index.html">Evidence</a>
+    <a class="ext" href="/demo/index.html">Joshimath</a>
+    <a class="ext" href="/awareness/index.html">2030 projections</a>
+  </nav>
+</div>
+
+<main>
+  <!-- ================= DECISION CENTER ================= -->
+  <section class="panel" id="decide" aria-labelledby="h-dc">
+    <h2 id="h-dc"><span class="step">1 &middot;</span> Predict &rarr; Impact &rarr; Act</h2>
+    <p class="sub">What is likely to happen next, what it means for your operation, and what to do about it. Pick a location, a date to replay and a prediction window. Tell EcoRisk AI about your operation once, below.</p>
+    <div class="dc-controls">
+      <label class="f">Location<select id="dSite" aria-label="Location"></select></label>
+      <label class="f">As of<input id="dDate" type="date" min="1995-03-01" max="2025-12-28"></label>
+      <div><div class="f" style="font-size:11px;color:var(--text-dim);text-transform:uppercase;letter-spacing:.03em;font-weight:600;margin-bottom:4px">Prediction window</div>
+        <div class="seg" role="group" aria-label="Prediction window" id="hSeg"><button type="button" data-h="24" class="on">24 h</button><button type="button" data-h="48">48 h</button><button type="button" data-h="72">72 h</button></div></div>
+      <label class="f">Business<select id="bType" aria-label="Business type">
+        <option value="logistics">Logistics &amp; delivery</option><option value="warehouse">Warehouse &amp; inventory</option>
+        <option value="retail">Retail store</option><option value="construction">Construction site</option></select></label>
+      <button type="button" id="dGo">Predict</button>
+    </div>
+    <div class="pia" aria-live="polite">
+      <div class="well">
+        <div class="step-n">1 &middot; Predict <span class="tag real">Model output</span></div>
+        <div class="q">What is likely to happen next?</div>
+        <div id="pEvent" style="font-size:15px;font-weight:600">&ndash;</div>
+        <div class="big" id="pProb">&ndash;</div>
+        <div id="pRel" style="font-size:13px"></div>
+        <dl class="kv" id="pKv"></dl>
+      </div>
+      <div class="well">
+        <div class="step-n">2 &middot; Impact <span class="tag rule">Your inputs &times; model</span></div>
+        <div class="q">What does this mean for my operation?</div>
+        <div><span class="lvl-chip" id="iLevel">&ndash;</span></div>
+        <dl class="kv" id="iKv"></dl>
+        <ul class="why-list" id="iWhy"></ul>
+      </div>
+      <div class="well">
+        <div class="step-n">3 &middot; Act <span class="tag rule">Decision rule</span></div>
+        <div class="q">What should I do?</div>
+        <div class="decision" id="aDecision">&ndash;</div>
+        <ul class="recs" id="aRecs"></ul>
+        <div class="share" style="margin-top:4px"><button class="sec" type="button" id="aCopy">Copy action plan</button></div>
+        <div class="rule" id="aRule"></div>
+      </div>
+    </div>
+    <details class="profile" id="profile">
+      <summary>Operations profile (used for Impact and Act, saved in this browser)</summary>
+      <div class="pgrid">
+        <label class="f">Operation name<input id="pfName" type="text" placeholder="e.g. Wayanad hub"></label>
+        <label class="f"><span id="pfUnitLbl">Active deliveries</span><input id="pfUnits" type="number" min="0" step="1"></label>
+        <label class="f">Value at risk if hit unprotected (₹)<input id="pfLoss" type="number" min="0" step="1000"></label>
+        <label class="f">Cost of protective action (₹)<input id="pfCost" type="number" min="0" step="500"></label>
+        <label class="f">Alternate route / site (optional)<input id="pfAlt" type="text" placeholder="e.g. Route B via Kalpetta"></label>
+        <label class="chk"><input id="pfSlope" type="checkbox"> Routes or work on steep hill roads/slopes</label>
+        <label class="chk"><input id="pfFlood" type="checkbox"> Routes cross flood-prone low roads or rivers</label>
+        <label class="chk"><input id="pfLow" type="checkbox"> Facility sits in a low-lying area</label>
+      </div>
+      <p class="note" style="margin-top:10px">Exposure and money figures are your own numbers multiplied by the model's probability. EcoRisk AI holds no business data of its own.</p>
+    </details>
+  </section>
+
+  <!-- ================= SITE OUTLOOK ================= -->
+  <section class="panel" id="outlook" aria-labelledby="h-out">
+    <h2 id="h-out"><span class="step">2 &middot;</span> Site outlook <span class="tag real">Model output</span></h2>
+    <p class="sub">Pick a site on the map, then replay any date. Both models only see data up to that day. The default replays the day before each recorded disaster that falls in the held-out test years (2022&ndash;2025).</p>
+    <div class="outlook">
+      <div>
+        <div class="well map-wrap">
+          <svg id="map" viewBox="0 0 500 560" role="img" aria-label="Map of India with the study sites, coloured by structural risk">
+            <path class="india" id="india"></path><g id="markers"></g>
+          </svg>
+          <div class="legend">
+            <span><i style="background:var(--danger)"></i>High</span>
+            <span><i style="background:var(--warn-fill)"></i>Moderate</span>
+            <span><i style="background:var(--green)"></i>Low</span>
+            <span><i style="background:var(--muted-dot)"></i>No structural score</span>
+          </div>
+        </div>
+        <p class="note" style="margin:8px 2px 0">Dot colour = EcoRisk structural risk. Ring = selected.</p>
+      </div>
+
+      <div>
+        <div class="site-head">
+          <div>
+            <h3 id="siteName">Loading&hellip;</h3>
+            <div class="site-meta" id="siteMeta"></div>
+          </div>
+          <div class="controls">
+            <label class="f">Site<select id="site" aria-label="Site"></select></label>
+            <label class="f">Forecast date<input id="date" type="date" min="1995-03-01" max="2025-12-28"></label>
+            <button id="replay" type="button">Predict</button>
+          </div>
+        </div>
+
+        <div id="result">
+          <div class="readouts">
+            <div class="well ro">
+              <div class="k">Structural risk &middot; EcoRisk</div>
+              <div class="v" id="srV">&ndash;</div>
+              <div class="meter" id="srM"></div>
+              <div class="d" id="srD"></div>
+            </div>
+            <div class="well ro">
+              <div class="k">Extreme rain, next <span class="hl">72 h</span></div>
+              <div class="v" id="frV">&ndash;</div>
+              <div class="meter" id="frM"></div>
+              <div class="d" id="frD"></div>
+            </div>
+          </div>
+          <div class="odd hide" id="odd" role="note"></div>
+          <div class="well verdict" id="verdict">
+            <div class="vk">What happens next</div>
+            <div class="vt" id="vT">&ndash;</div>
+            <div class="vd" id="vD"></div>
+          </div>
+          <div class="share"><button class="sec" type="button" id="copy">Copy this outlook</button><button class="sec" type="button" id="toCalc">Explore what-ifs for this site &rarr;</button></div>
+          <div class="well chart-box">
+            <div class="chart-title">
+              <span id="chartT">Last 30 days</span>
+              <span class="key"><span><i style="background:var(--accent)"></i>P(extreme rain, next <span class="hl">72 h</span>)</span><span><i style="background:var(--bars)"></i>Daily rain</span><span><i style="background:var(--danger)"></i>Alert threshold</span><span><i style="background:var(--accent2)"></i>Beyond training experience</span></span>
+            </div>
+            <svg id="chart" role="img" aria-label="Forecast probability and daily rainfall over the last 30 days"></svg>
+          </div>
+          <div class="drivers">
+            <div class="well"><h4>Why the <span class="hl">72 h</span> forecast is where it is</h4><div class="drv" id="drvF"></div></div>
+            <div class="well"><h4>Why this land is fragile</h4><div class="drv" id="drvS"></div></div>
+          </div>
+          <div class="err" id="err" role="alert"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================= CALCULATOR ================= -->
+  <section class="panel" id="calc" aria-labelledby="h-calc">
+    <h2 id="h-calc"><span class="step">3 &middot;</span> What-if calculator <span class="tag real">Real trained models</span></h2>
+    <p class="sub">Move the sliders and watch both trained models respond instantly. Start from a real site's typical day for the chosen month, then ask: what if a cloudburst hits? What if the hillside loses its forest? Sliders stay inside the range seen in the training data, so the model is never pushed into territory it never learned.</p>
+    <div class="row" style="margin-bottom:14px">
+      <label class="f">Start from site<select id="cSite"></select></label>
+      <label class="f">Month<select id="cMonth"></select></label>
+      <button class="sec" type="button" id="cReset">Reset to this site</button>
+    </div>
+    <div class="calc">
+      <div class="well">
+        <h3>The trigger: weather</h3>
+        <p class="hint">Drives the 72-hour forecast.</p>
+        <div class="chips" id="wxPresets" role="group" aria-label="Weather scenarios"></div>
+        <div id="wxSliders"></div>
+      </div>
+      <div class="well">
+        <h3>The land: human activity &amp; terrain</h3>
+        <p class="hint">Drives structural risk. Trends are per year, from Sentinel-2 satellite data.</p>
+        <div class="chips" id="landPresets" role="group" aria-label="Land-use scenarios"></div>
+        <div id="landSliders"></div>
+      </div>
+    </div>
+    <div class="gauges">
+      <div class="well gauge"><svg id="gS" viewBox="0 0 120 72" aria-hidden="true"></svg>
+        <div><div class="gk">Structural risk</div><div class="gv" id="cSV">&ndash;</div><div class="gd" id="cSD"></div></div></div>
+      <div class="well gauge"><svg id="gF" viewBox="0 0 120 72" aria-hidden="true"></svg>
+        <div><div class="gk">Extreme rain, next <span class="hl">72 h</span></div><div class="gv" id="cFV">&ndash;</div><div class="gd" id="cFD"></div></div></div>
+    </div>
+    <div class="odd hide" id="cOdd" role="note" style="margin-top:12px"></div>
+    <div class="well verdict" id="cVerdict" style="margin-top:12px">
+      <div class="vk">What happens next</div><div class="vt" id="cVT">&ndash;</div><div class="vd" id="cVD"></div>
+    </div>
+    <p class="why" id="cWhy"></p>
+  </section>
+
+  <!-- ================= UNSEEN ================= -->
+  <section class="panel" id="unseen" aria-labelledby="h-un">
+    <h2 id="h-un"><span class="step">4 &middot;</span> Predict on unseen data <span class="tag live">Live input</span></h2>
+    <p class="sub">Give EcoRisk AI a weather record it has never seen: at least 31 consecutive days of date, rainfall, temperature, humidity, pressure and wind. Common column names (rainfall, temp, humidity, pressure in hPa or kPa) are mapped automatically, and missing dew point is derived. The result appears in the Site outlook above.</p>
+    <div class="unseen">
+      <div>
+        <div class="row">
+          <label class="f">Location
+            <select id="uSite"></select></label>
+          <label class="f">or upload CSV<input id="file" type="file" accept=".csv,text/csv"></label>
+        </div>
+        <div class="row" id="custom" style="margin-top:10px">
+          <label class="f">Slope (&deg;)<input id="slope" type="number" value="25" min="0" max="80" style="width:90px"></label>
+          <label class="f">Elevation (m)<input id="elev" type="number" value="1500" style="width:110px"></label>
+          <label class="f">Terrain<select id="coastal"><option value="0">Hill / inland</option><option value="1">Coastal</option></select></label>
+        </div>
+        <p class="note">A new location gets the rain forecast. A structural score needs the satellite land-change trends, which exist only for the study sites.</p>
+      </div>
+      <div>
+        <textarea id="csv" aria-label="Weather CSV" placeholder="date,rainfall,temp,humidity,pressure,wind&#10;2024-07-01,12.4,24.1,88,94.2,2.1&#10;..."></textarea>
+        <div class="row" style="margin-top:10px">
+          <button id="run" type="button">Predict what happens next</button>
+          <button id="example" type="button" class="sec">Fill with a held-out example</button>
+          <button id="external" type="button" class="sec">Try a real external file</button>
+        </div>
+        <div class="err" id="uErr" role="alert"></div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- ================= AWARENESS ================= -->
+  <section class="panel" id="aware" aria-labelledby="h-aw">
+    <h2 id="h-aw"><span class="step">5 &middot;</span> Stay safe: turn a prediction into action <span class="tag live">Follows your outlook</span></h2>
+    <p class="sub">A prediction only matters if someone acts on it. The level that matches the latest outlook above is highlighted. Always follow official warnings from IMD, NDMA and your district administration first.</p>
+    <div class="levels" id="levels">
+      <div class="well lvl g" data-l="0"><h4>Normal <span class="you">Current outlook</span></h4><p>No flag from either model.</p>
+        <ul><li>Know your nearest safe shelter and two ways to reach it.</li><li>Keep an emergency kit: water, torch, medicines, documents, power bank.</li><li>Save the helpline numbers below.</li></ul></div>
+      <div class="well lvl y" data-l="1"><h4>Watch <span class="you">Current outlook</span></h4><p>Fragile land, or heavy rain likely, but not both.</p>
+        <ul><li>Check IMD and local forecasts twice a day.</li><li>Clear drains around your home and keep valuables off the floor.</li><li>Avoid trekking, river banks and road cuts on steep slopes.</li></ul></div>
+      <div class="well lvl r" data-l="2"><h4>Act <span class="you">Current outlook</span></h4><p>Fragile land and an extreme-rain alert together.</p>
+        <ul><li>Be ready to move to higher, stable ground at short notice.</li><li>Do not cross flowing water or stay near steep slopes overnight.</li><li>Follow district evacuation orders immediately. Help elderly neighbours.</li></ul></div>
+    </div>
+    <div class="human well" id="human"></div>
+    <div class="signs">
+      <div class="well"><h4>Warning signs of a landslide</h4><ul>
+        <li>New cracks in the ground, walls or roads</li><li>Trees, poles or fences starting to tilt</li><li>Doors and windows suddenly jamming</li><li>Rumbling sounds, or falling rocks and soil</li></ul></div>
+      <div class="well"><h4>Warning signs of a flash flood</h4><ul>
+        <li>Stream water suddenly turning muddy</li><li>River level rising fast, or carrying debris</li><li>Unusually heavy rain upstream, even if it is dry where you are</li><li>A roaring sound from the valley</li></ul></div>
+      <div class="well"><h4>How human activity raises risk</h4><ul>
+        <li>Cutting trees removes roots that bind slope soil</li><li>Unplanned construction loads slopes and blocks drainage</li><li>Road cuts at the toe of a slope remove its support</li><li>Paving over land sends rain straight into streams</li></ul></div>
+    </div>
+    <div class="help" aria-label="Emergency helplines in India">
+      <a class="well" href="tel:112"><b>112</b><span>National emergency</span></a>
+      <a class="well" href="tel:1078"><b>1078</b><span>NDMA disaster helpline</span></a>
+      <a class="well" href="tel:1070"><b>1070</b><span>State emergency operations</span></a>
+      <a class="well" href="tel:1077"><b>1077</b><span>District control room</span></a>
+    </div>
+    <p class="note" style="margin-top:8px">Numbers can vary by state. Check your district's disaster management page.</p>
+    <div class="quiz well" id="quiz" aria-live="polite"></div>
+  </section>
+
+  <!-- ================= HOW ================= -->
+  <section class="panel" id="how" aria-labelledby="h-how">
+    <h2 id="h-how"><span class="step">6 &middot;</span> How EcoRisk AI predicts <span class="tag real">Real pipeline</span></h2>
+    <p class="sub">Two models answer two questions. The outlook combines them with a fixed, published rule.</p>
+    <div class="pipe" id="pipe"></div>
+  </section>
+
+  <!-- ================= VALIDATION ================= -->
+  <section class="panel" id="validation" aria-labelledby="h-val">
+    <h2 id="h-val"><span class="step">7 &middot;</span> Validation <span class="tag real">Real, reported honestly</span></h2>
+    <p class="sub">The 72 h model is trained on 1995&ndash;2018, tuned on 2019&ndash;2021, and scored once on 2022&ndash;2025, data it never saw. The structural model is scored leave-one-site-out.</p>
+    <div class="stats" id="stats"></div>
+    <div class="cols">
+      <div>
+        <h3 class="t">72 h model vs. baselines (test years)</h3>
+        <table><thead><tr><th>Model</th><th>ROC-AUC</th><th>PR-AUC</th><th>Brier</th></tr></thead><tbody id="mtab"></tbody></table>
+        <h3 class="t" style="margin-top:18px">Every prediction window (test years)</h3>
+        <table><thead><tr><th>Window</th><th>ROC-AUC</th><th>PR-AUC (climatology)</th><th>Alert precision / recall</th></tr></thead><tbody id="wtab"></tbody></table>
+        <h3 class="t" style="margin-top:18px">Business value of acting on the forecast (test years)</h3>
+        <p class="note" style="margin:0 0 6px">Share of perfect-foresight savings captured by "act when probability &gt; cost &divide; loss", versus the best fixed policy (always or never protect). 0 = no better, 1 = perfect. The dot is your profile's ratio.</p>
+        <svg class="vcurve" id="vcurve" role="img" aria-label="Relative economic value by cost to loss ratio"></svg>
+        <h3 class="t" style="margin-top:18px">External check: 9 unseen places, a different data source</h3>
+        <p class="note" style="margin:0 0 8px">ERA5 weather (Open-Meteo), never used in training. Places: Shimla, Darjeeling, Gangtok, Srinagar, Itanagar, Dehradun, Mumbai, Mangaluru, Guwahati. Scored 2022&ndash;2024.</p>
+        <table><thead><tr><th>Model</th><th>ROC-AUC</th><th>PR-AUC</th><th>Brier</th><th>Mean P vs. observed</th></tr></thead><tbody id="xtab"></tbody></table>
+        <h3 class="t" style="margin-top:18px">Recorded disasters in the test years</h3>
+        <table><thead><tr><th>Site</th><th>Date</th><th>Peak P, 3 days before</th><th>Alert?</th></tr></thead><tbody id="etab"></tbody></table>
+      </div>
+      <div>
+        <h3 class="t">Structural model: what raises risk</h3>
+        <p class="note" style="margin:0 0 10px" id="fiNote"></p>
+        <div id="fi"></div>
+        <h3 class="t" style="margin-top:18px">72 h model: what drives the forecast</h3>
+        <p class="note" style="margin:0 0 10px">Drop in PR-AUC when each feature is shuffled (test years).</p>
+        <div id="pi"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel" aria-labelledby="h-lim">
+    <h2 id="h-lim"><span class="step">8 &middot;</span> Honest limits</h2>
+    <ul class="limits" id="limits"></ul>
+  </section>
+</main>
+<footer>Data: NASA POWER (daily weather), Sentinel-2 and SRTM via Google Earth Engine (land change, terrain), NOAA IBTrACS, cited disaster records. Code written with AI assistance (Claude Code); no AI model runs at prediction time. Details in ml/EcoForecast_README.md.</footer>
+<div class="toast" id="toast" role="status"></div>
+
+<script src="/awareness/india-map.js"></script>
+<script>
+const $ = (id) => document.getElementById(id);
+const pct = (x, d = 0) => (Math.round(x * 1e4) / 100).toFixed(d) + "%"; // round once so 0.93496 and 0.935 both read 94%
+const S = { sites: [], risk: null, res: null, site: null, h: 24, hz: null };
+const NICE = { rain_1d: "Rain today", rain_3d: "Rain, last 3 days", rain_7d: "Rain, last 7 days", rain_14d: "Rain, last 14 days",
+  rain_30d: "Rain, last 30 days", wet_days_7d: "Wet days this week", rain_accel: "Rain accelerating", t2m: "Temperature",
+  rh2m: "Humidity", ws2m: "Wind", dew_spread: "Air near saturation", ps_kpa: "Surface pressure", ps_chg_1d: "Pressure change, 1 day",
+  ps_chg_3d: "Pressure change, 3 days", rh_chg_3d: "Humidity change, 3 days", doy_sin: "Season", doy_cos: "Season",
+  mean_slope_degrees: "Slope", elevation_mean_m: "Elevation", ndvi_trend_slope: "Vegetation trend (NDVI)",
+  ndbi_trend_slope: "Construction trend (NDBI)", terrain_is_coastal: "Coastal terrain", rainfall_anomaly_pct: "Rainfall anomaly",
+  lst_trend_slope: "Land-surface warming" };
+const nice = (k) => NICE[k] || k;
+const level = (p) => p >= 0.7 ? "High" : p >= 0.4 ? "Moderate" : "Low";
+const lvlColor = (p) => p >= 0.7 ? "var(--danger)" : p >= 0.4 ? "var(--warn)" : "var(--ok)";
+const lvlFill = (p) => p >= 0.7 ? "var(--danger)" : p >= 0.4 ? "var(--warn-fill)" : "var(--green)";
+
+const COLNAME = { date: "date", rain: "rainfall", T2M: "temperature", RH2M: "humidity", PS: "pressure", WS2M: "wind speed", T2MDEW: "dew point" };
+function friendly(m) {
+  m = String(m || "");
+  if (/No columns to parse|EOF|empty/i.test(m)) return "Paste a weather table or upload a CSV file first.";
+  if (/missing columns/.test(m)) {
+    const cols = (m.match(/'([^']+)'/g) || []).map(x => x.replace(/'/g, "")).filter(c => c !== "T2MDEW").map(c => COLNAME[c] || c);
+    return `Your table is missing: ${cols.join(", ")}. Accepted column names include date, rainfall (or rain/precipitation), temp, humidity, pressure (hPa or kPa) and wind.`;
+  }
+  const im = m.match(/impossible value: (.+) on (\S+) \(valid range (.+)\)/);
+  if (im) return `Impossible value: ${im[1]} on ${im[2]} (real weather stays within ${im[3]}). Check the file's units or that row.`;
+  if (/at least 31 days/.test(m)) return "Not enough history: the forecast needs at least 31 days of weather before the chosen date (our records start on 1 Jan 1995).";
+  if (/consecutive/.test(m)) return "Some days are missing. Rows must be consecutive days with no gaps.";
+  if (/slope and elevation/.test(m)) return "For a new location, enter its slope and elevation.";
+  if (/Failed to fetch|NetworkError/i.test(m)) return "Can't reach the EcoRisk AI server. Is python3 ml/ef_server.py still running?";
+  const nn = m.match(/non-numeric values in column (\w+), e\.g\. '([^']*)'/);
+  if (nn) return `"${nn[2]}" in the ${COLNAME[nn[1]] || nn[1]} column isn't a number. Every weather value must be numeric.`;
+  const bd = m.match(/unreadable date, e\.g\. '([^']*)'/);
+  if (bd) return `"${bd[1]}" isn't a date we can read. Use a format like 2024-07-29.`;
+  if (/could not convert|invalid literal|Unknown datetime|time data/i.test(m)) return "Some values couldn't be read. Check that dates look like 2024-07-29 and every weather value is a number.";
+  return m;
+}
+async function j(u, o) {
+  const r = await fetch(u, o), t = await r.text();
+  let d; try { d = JSON.parse(t); } catch { d = t; }
+  if (!r.ok) throw new Error((d && d.error) || t);
+  return d;
+}
+
+/* ---------- map ---------- */
+function drawMap() {
+  const M = window.INDIA_MAP; if (!M) return;
+  $("india").setAttribute("d", M.pathD);
+  const p = M.proj, xy = (lon, lat) => [p.pad + (lon - p.minx) / (p.maxx - p.minx) * (p.vb_w - 2 * p.pad),
+                                        p.pad + (p.maxy - lat) / (p.maxy - p.miny) * (p.vb_h - 2 * p.pad)];
+  $("markers").innerHTML = S.sites.map(s => {
+    const r = S.risk.by[s.site_id], [x, y] = xy(s.lon, s.lat);
+    return `<circle data-s="${s.site_id}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="7" fill="${r ? lvlFill(r.predicted_risk_prob) : "var(--muted-dot)"}" tabindex="0" role="button" aria-label="${s.name}"><title>${s.name}${r ? " · structural risk " + pct(r.predicted_risk_prob) : ""}</title></circle>`;
+  }).join("");
+  $("markers").querySelectorAll("circle").forEach(c => {
+    c.onclick = () => choose(c.dataset.s, true);
+    c.onkeydown = (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); choose(c.dataset.s, true); } };
+  });
+}
+function markSelected() {
+  $("markers").querySelectorAll("circle").forEach(c => {
+    const on = c.dataset.s === S.site; c.classList.toggle("sel", on); if (on) c.parentNode.appendChild(c);
+  });
+}
+
+/* ---------- site selection ---------- */
+function defaultDate(s) {
+  if (s.disaster_date && s.disaster_date >= "2022-01-01" && s.disaster_date <= "2025-12-31") {
+    const d = new Date(s.disaster_date + "T00:00:00Z"); d.setUTCDate(d.getUTCDate() - 1); return d.toISOString().slice(0, 10);
+  }
+  return "2025-08-15";
+}
+function choose(id, run) {
+  const s = S.sites.find(x => x.site_id === id); if (!s) return;
+  S.site = id; $("site").value = id; $("date").value = defaultDate(s); $("dSite").value = id; $("dDate").value = $("date").value;
+  $("siteName").textContent = s.name;
+  const ev = s.disaster_date ? `Recorded ${String(s.disaster_type || "event").replace(/_/g, " ")} on ${s.disaster_date}` : "Control site: no recorded disaster";
+  $("siteMeta").textContent = `${s.terrain} · ${ev}`;
+  markSelected();
+  if (run) replay();
+}
+async function replay() {
+  $("err").textContent = ""; $("replay").disabled = true;
+  try {
+    const csv = await j(`/api/sample?site=${S.site}&end=${$("date").value}&days=60`);
+    const d = await j("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ csv, site: S.site, horizon: S.h }) });
+    render(d, S.site);
+  } catch (e) { $("err").textContent = friendly(e.message); }
+  finally { $("replay").disabled = false; }
+}
+
+const ODD_NAMES = { rain_1d: "rain today", rain_3d: "3-day rain", rain_7d: "7-day rain", rain_30d: "30-day rain", t2m: "temperature",
+  ws2m: "wind", ps_anom: "pressure vs. normal", ps_chg_1d: "1-day pressure change", ps_chg_3d: "3-day pressure change",
+  mean_slope_degrees: "slope", elevation_mean_m: "elevation" };
+function oddText(u) {
+  if (!u) return "";
+  const parts = u.split(";").map(x => x.trim()).map(x => { const m = x.match(/^(\w+)=(-?[\d.]+) \(seen (-?[\d.]+) to (-?[\d.]+)\)$/);
+    return m ? `${ODD_NAMES[m[1]] || m[1]} ${(+m[2]).toFixed(1)} (training saw ${(+m[3]).toFixed(1)} to ${(+m[4]).toFixed(1)})` : x; });
+  return "Beyond the model's experience: " + parts.join("; ") + ". The forecast here is an extrapolation; treat it with extra caution.";
+}
+/* ---------- render outlook ---------- */
+let LAST = null;
+window.addEventListener("resize", () => { if (LAST) drawChart(LAST.R, LAST.thr); });
+function render(d, siteId) {
+  const R = d.rows.slice(-30), last = R[R.length - 1], thr = d.threshold;
+  const r = siteId && S.risk.by[siteId];
+  // structural
+  if (r) {
+    const p = r.predicted_risk_prob;
+    $("srV").innerHTML = `<span style="color:${lvlColor(p)}">${level(p)}</span> <span class="num" style="font-size:18px;color:var(--text-dim)">${pct(p)}</span>`;
+    $("srM").innerHTML = `<i style="left:${r.risk_ci_low * 100}%;width:${Math.max(1, (r.risk_ci_high - r.risk_ci_low) * 100)}%;background:${lvlColor(p)};opacity:.55"></i><u style="left:${p * 100}%"></u>`;
+    $("srD").textContent = `Bootstrap interval ${pct(r.risk_ci_low)}–${pct(r.risk_ci_high)}. Slow-moving: set by land change and terrain.`;
+    const items = [["Vegetation trend (NDVI)", r.ndvi_trend_slope.toFixed(4) + "/yr"], ["Construction trend (NDBI)", r.ndbi_trend_slope.toFixed(4) + "/yr"],
+      ["Slope", r.mean_slope_degrees.toFixed(1) + "°"], ["Elevation", Math.round(r.elevation_mean_m) + " m"], ["Rainfall anomaly", (r.rainfall_anomaly_pct > 0 ? "+" : "") + r.rainfall_anomaly_pct.toFixed(0) + "%"]];
+    $("drvS").innerHTML = items.map(([a, b]) => `<span>${a}</span><span class="n">${b}</span>`).join("");
+  } else {
+    $("srV").innerHTML = `<span style="color:var(--text-dim);font-size:20px">Not scored</span>`;
+    $("srM").innerHTML = "";
+    $("srD").textContent = siteId ? "This terrain (plains/desert) is outside the structural model's training scope." : "New location: no satellite land-change trend available.";
+    $("drvS").innerHTML = `<span class="note">No structural score for this location.</span>`;
+  }
+  // forecast
+  const fp = last.prob_extreme_rain_next_3d;
+  $("frV").innerHTML = `<span style="color:${last.alert ? "var(--danger)" : "var(--text)"}">${pct(fp)}</span> <span style="font-size:13px;font-weight:700;letter-spacing:.04em;color:${last.alert ? "var(--danger)" : "var(--text-dim)"}">${last.alert ? "ALERT" : "NO ALERT"}</span>`;
+  const scale = Math.max(0.5, fp * 1.2);
+  $("frM").innerHTML = `<i style="left:0;width:${Math.min(100, fp / scale * 100)}%;background:${last.alert ? "var(--danger)" : "var(--accent)"}"></i><u style="left:${Math.min(100, thr / scale * 100)}%;background:var(--danger)"></u>`;
+  $("frD").textContent = d.recalibrated
+    ? `As of ${last.date}. Recalibrated to this data source from its own history; alert line at ${pct(thr, 1)}.`
+    : `As of ${last.date}. Alert line at ${pct(thr, 1)}, fixed on validation years. Fast-moving: set by the weather.`;
+  const f = (last.top_factors || "").split(";").map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(\S+) \(\+([\d.]+)\)$/); return m ? [nice(m[1]), "+" + (parseFloat(m[2]) * 100).toFixed(0) + " pts"] : [x, ""]; });
+  $("drvF").innerHTML = (f.length ? f : [["Nothing pushing it up today", ""]]).map(([a, b]) => `<span>${a}</span><span class="n">${b}</span>`).join("") +
+    `<span>Rain on ${last.date}</span><span class="n">${last.rain_mm.toFixed(1)} mm</span>`;
+  // verdict
+  const sp = r ? r.predicted_risk_prob : null, v = verdictOf(sp, last.alert);
+  $("verdict").className = "well verdict " + v.cls; $("vT").textContent = v.t; $("vD").textContent = v.d;
+  setLevel(v.lvl); if (siteId) humanBox(siteId);
+  OUT = { name: $("siteName").textContent, date: last.date, sr: r ? `${level(sp)} (${pct(sp)})` : "not scored", fr: `${pct(fp)}${last.alert ? " (ALERT)" : ""}`, v: v.t };
+  const odd = oddText(last.unfamiliar); $("odd").textContent = odd; $("odd").classList.toggle("hide", !odd);
+  LAST = { R, thr }; drawChart(R, thr);
+  LASTD = { d, siteId }; renderDecision(d, siteId);
+  $("chartT").textContent = `${R[0].date} → ${last.date}`;
+}
+
+function drawChart(R, thr) {
+  const W = Math.max(300, Math.round($("chart").clientWidth || 800)), H = 230, L = 40, Rr = 44, T = 12, B = 26, n = R.length;
+  const pMax = Math.max(0.5, ...R.map(r => r.prob_extreme_rain_next_3d), thr * 1.3);
+  const rMax = Math.max(20, ...R.map(r => r.rain_mm));
+  const x = (i) => L + (i + 0.5) * (W - L - Rr) / n, bw = (W - L - Rr) / n * 0.62;
+  const yp = (p) => T + (1 - p / pMax) * (H - T - B), yr = (v) => T + (1 - v / rMax) * (H - T - B);
+  let s = "";
+  [0, 0.5, 1].forEach(f => { const y = T + f * (H - T - B); s += `<line x1="${L}" x2="${W - Rr}" y1="${y}" y2="${y}" stroke="var(--track)"/>`; });
+  s += `<text x="${L - 6}" y="${T + 4}" text-anchor="end" fill="var(--text-dim)" font-size="10">${pct(pMax)}</text><text x="${L - 6}" y="${H - B}" text-anchor="end" fill="var(--text-dim)" font-size="10">0</text>`;
+  s += `<text x="${W - Rr + 6}" y="${T + 4}" fill="var(--slate-bright)" font-size="10">${Math.round(rMax)} mm</text>`;
+  R.forEach((r, i) => { const y = yr(r.rain_mm); s += `<rect x="${(x(i) - bw / 2).toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${(H - B - y).toFixed(1)}" fill="var(--bars)" rx="1"><title>${r.date}: ${r.rain_mm.toFixed(1)} mm</title></rect>`; });
+  s += `<line x1="${L}" x2="${W - Rr}" y1="${yp(thr)}" y2="${yp(thr)}" stroke="var(--danger)" stroke-dasharray="4 4" stroke-width="1.2"/>`;
+  s += `<polyline fill="none" stroke="var(--accent)" stroke-width="2.2" stroke-linejoin="round" points="${R.map((r, i) => x(i).toFixed(1) + "," + yp(r.prob_extreme_rain_next_3d).toFixed(1)).join(" ")}"/>`;
+  R.forEach((r, i) => { if (r.unfamiliar) s += `<circle cx="${x(i).toFixed(1)}" cy="${yp(r.prob_extreme_rain_next_3d).toFixed(1)}" r="7.5" fill="none" stroke="var(--accent2)" stroke-dasharray="2 2"><title>${r.date}: inputs beyond training experience</title></circle>`; });
+  R.forEach((r, i) => { s += `<circle cx="${x(i).toFixed(1)}" cy="${yp(r.prob_extreme_rain_next_3d).toFixed(1)}" r="${r.alert ? 4.5 : 2.5}" fill="${r.alert ? "var(--danger)" : "var(--accent)"}"><title>${r.date}: ${pct(r.prob_extreme_rain_next_3d, 1)}${r.alert ? " · ALERT" : ""}</title></circle>`; });
+  [0, Math.floor(n / 2), n - 1].forEach(i => { s += `<text x="${x(i)}" y="${H - 8}" text-anchor="middle" fill="var(--text-dim)" font-size="10">${R[i].date.slice(5)}</text>`; });
+  $("chart").setAttribute("viewBox", `0 0 ${W} ${H}`); $("chart").innerHTML = s;
+}
+
+/* ---------- static sections ---------- */
+function fillStatic() {
+  const res = S.res, m = res.models, c = m[res.chosen_model], rk = S.risk, ev = res.recorded_event_backtest, hit = ev.filter(e => e.alert_raised).length;
+  $("pipe").innerHTML = [
+    ["Collect", `Daily weather 1995–2025 from NASA POWER for ${S.sites.length} sites across hills, coasts and plains, plus Sentinel-2 land change and SRTM terrain.`],
+    ["Engineer", "Rolling rainfall (1–30 days), rain acceleration, humidity, pressure tendency, season, slope, vegetation and construction trends. Only past data per day."],
+    ["Learn: where", `Structural model (logistic regression) learns which land is fragile from ${rk.n_sites_real} real sites. Leave-one-out ${rk.loocv.correct}/${rk.loocv.total}.`],
+    ["Learn: when", `Three rain models (24, 48 and 72 h windows, monotonic gradient boosting) learn which conditions precede extreme rain. ${res.n_train.toLocaleString()} training site-days, tested on ${res.n_test.toLocaleString()} unseen. A longer window is never less likely than a shorter one.`],
+    ["Predict → Impact → Act", "The forecast meets your operations profile: exposure × probability gives the impact, and \"act when probability > cost ÷ loss\" gives the decision. Rules, published on the page, not a hidden model."]
+  ].map(([h, p]) => `<div class="well"><h4>${h}</h4><p>${p}</p></div>`).join("");
+  $("stats").innerHTML = [
+    [c.roc_auc.toFixed(2), `72 h ROC-AUC on unseen years (climatology ${m.climatology.roc_auc.toFixed(2)})`],
+    [(c.pr_auc / m.climatology.pr_auc).toFixed(1) + "×", `PR-AUC lift over climatology (${c.pr_auc.toFixed(3)} vs ${m.climatology.pr_auc.toFixed(3)})`],
+    [`${hit}/${ev.length}`, "recorded disasters in test years with an alert in the 3 days before"],
+    [`${rk.loocv.correct}/${rk.loocv.total}`, "structural model, leave-one-site-out"],
+    [pct(c.precision), "alert precision: most alerts are false alarms", true]
+  ].map(([v, l, bad]) => `<div class="well stat"><div class="v${bad ? " bad" : ""}">${v}</div><div class="l">${l}</div></div>`).join("");
+  const names = { persistence: "Persistence (baseline)", climatology: "Climatology (baseline)", logistic: "Logistic regression", grad_boost: "Gradient boosting" };
+  $("mtab").innerHTML = ["persistence", "climatology", "logistic", "grad_boost"].map(k => `<tr class="${k === res.chosen_model ? "best" : ""}"><td>${names[k]}${k === res.chosen_model ? " · chosen" : ""}</td><td>${m[k].roc_auc.toFixed(3)}</td><td>${m[k].pr_auc.toFixed(3)}</td><td>${m[k].brier.toFixed(4)}</td></tr>`).join("");
+  $("wtab").innerHTML = ["24", "48", "72"].map(h => { const w = S.hz.windows[h];
+    return `<tr class="${+h === S.h ? "best" : ""}"><td>${h} h</td><td>${w.roc_auc.toFixed(3)}</td><td>${w.pr_auc.toFixed(3)} (${w.climatology.pr_auc.toFixed(3)})</td><td>${pct(w.precision)} / ${pct(w.recall)}</td></tr>`; }).join("");
+  if (S.ext) {
+    const x = S.ext, o = x.positive_rate;
+    $("xtab").innerHTML = [["Climatology (baseline)", x.climatology, null], ["EcoRisk AI, raw", x.model, x.mean_predicted_vs_observed[0]],
+      ["EcoRisk AI, recalibrated to source", x.model_recalibrated_to_source, x.model_recalibrated_to_source.mean_predicted]]
+      .map(([n, m, mp], i) => `<tr class="${i === 2 ? "best" : ""}"><td>${n}</td><td>${m.roc_auc.toFixed(3)}</td><td>${m.pr_auc.toFixed(3)}</td><td>${m.brier.toFixed(4)}</td><td>${mp == null ? "–" : pct(mp, 1) + " vs " + pct(o, 1)}</td></tr>`).join("");
+  } else { $("xtab").innerHTML = `<tr><td colspan="5" class="note">Run python3 ml/external_validation.py to fill this in.</td></tr>`; }
+  const nm = Object.fromEntries(S.sites.map(s => [s.site_id, s.name.split(",")[0]]));
+  $("etab").innerHTML = ev.map(e => `<tr><td>${nm[e.site_id] || e.site_id}</td><td>${e.event_date}</td><td>${pct(e.peak_prob_3d_before, 1)}</td><td class="${e.alert_raised ? "yes" : "no"}">${e.alert_raised ? "Yes" : "Missed"}</td></tr>`).join("");
+  const fi = Object.entries(rk.feature_importance).sort((a, b) => Math.abs(b[1]) - Math.abs(a[1])), mx = Math.max(...fi.map(x => Math.abs(x[1])));
+  $("fiNote").textContent = `Standardized coefficients. Right (red) raises structural risk, left lowers it. Cross-terrain test: trained on hill sites only, ${rk.cross_terrain.n_correct} of ${rk.cross_terrain.n_coastal_test} coastal sites correct.`;
+  $("fi").innerHTML = fi.map(([k, v]) => `<div class="fi"><span>${nice(k)}</span><div class="bar"><i style="left:${v < 0 ? 50 - Math.abs(v) / mx * 50 : 50}%;width:${Math.abs(v) / mx * 50}%;background:${v < 0 ? "var(--ok)" : "var(--danger)"}"></i><u></u></div><span class="num">${v > 0 ? "+" : ""}${v.toFixed(2)}</span></div>`).join("");
+  const pi = res.permutation_importance_pr_auc_drop.slice(0, 7), pm = pi[0].drop;
+  $("pi").innerHTML = pi.map(p => `<div class="fi"><span>${nice(p.feature)}</span><div class="bar"><i style="left:0;width:${Math.max(0, p.drop) / pm * 100}%;background:var(--accent)"></i></div><span class="num">${p.drop.toFixed(3)}</span></div>`).join("");
+  $("limits").innerHTML = [
+    `<b>Most alerts are false alarms.</b> Alert precision is ${pct(c.precision)}, recall ${pct(c.recall)}. EcoRisk AI is a screening tool that narrows where to look, not a siren.`,
+    `<b>The 72 h model predicts extreme rain, not the disaster itself.</b> Disasters are rare (one recorded per site), so recorded events are used as a backtest, not as training labels.`,
+    `<b>Non-rain disasters are invisible to the 72 h model.</b> Joshimath (subsidence) was missed. Its structural score still flags the land.`,
+    `<b>The structural model is small.</b> ${rk.n_sites_real} real sites, ${rk.loocv.correct}/${rk.loocv.total} leave-one-out. Plains and desert sites are outside its scope.`,
+    `<b>Weather inputs are ~50 km grid cells.</b> Nearby sites (e.g. Joshimath and Kedarnath) share the same weather series. There is no numerical weather-forecast input.`,
+    `<b>Other data sources need history.</b> On unseen places with ERA5 data the raw model ranks days well but over-states probabilities about 3×. With 5+ years of the source's own history, EcoRisk AI recalibrates automatically and the probabilities become honest again. Short files from other sources get a warning.`,
+    `<b>Record-breaking weather is an extrapolation.</b> Some disasters (Jakhau, Guna, Silchar) came with rain, wind or pressure beyond anything in training. The model still alerted, and it can only extrapolate upward with more rain, but such forecasts are marked "beyond the model's experience".`,
+    `<b>Calibration is close, not perfect.</b> Mid-range probabilities slightly under-state the observed rate. Above 40% they over-state it.`
+  ].map(x => `<li>${x}</li>`).join("");
+}
+
+/* ---------- unseen ---------- */
+function toggleCustom() { $("custom").classList.toggle("hide", $("uSite").value !== "__new"); }
+$("csv").addEventListener("input", () => { $("uErr").textContent = ""; });
+$("file").onchange = (e) => { const f = e.target.files[0]; if (f) f.text().then(t => { $("csv").value = t; }); };
+$("example").onclick = async () => {
+  $("uErr").textContent = "";
+  const id = $("uSite").value === "__new" ? "wayanad" : $("uSite").value, s = S.sites.find(x => x.site_id === id);
+  try {
+    const raw = await j(`/api/sample?site=${id}&end=${defaultDate(s)}&days=45`);
+    // present it the way an outside dataset might arrive: renamed columns, pressure in hPa, no dew point
+    const lines = raw.trim().split("\n"), hdr = lines[0].split(","), ix = (k) => hdr.indexOf(k);
+    $("csv").value = ["date,rainfall,temp,humidity,pressure_hpa,wind"].concat(lines.slice(1).map(l => {
+      const c = l.split(","); return [c[ix("date")], c[ix("rain")], c[ix("T2M")], c[ix("RH2M")], (parseFloat(c[ix("PS")]) * 10).toFixed(1), c[ix("WS2M")]].join(",");
+    })).join("\n");
+  } catch (e) { $("uErr").textContent = friendly(e.message); }
+};
+function noteSummary(notes) {
+  const mapped = notes.filter(n => n.startsWith("mapped column")).length;
+  const conv = notes.filter(n => /^(converted|scaled|derived)/.test(n)).map(n => n
+    .replace(/^converted (\w+) from (.+) to (.+)$/, "$2→$3").replace(/^scaled 10 m wind to 2 m height.*/, "wind 10 m→2 m")
+    .replace(/^derived T2MDEW.*/, "dew point derived"));
+  const other = notes.filter(n => !n.startsWith("mapped column") && !/^(converted|scaled|derived)/.test(n))
+    .map(n => n.replace(/^(\d+) of the last (\d+) days have inputs beyond.*/, "$1 of last $2 days beyond training experience").replace(/^recalibrated to this data source using (\d+) years.*/, "recalibrated to this source ($1 yrs history)")
+               .replace(/^probabilities are calibrated to NASA POWER data.*/, "short file: probabilities assume NASA-POWER-like data (add 5+ yrs to recalibrate)"));
+  return [mapped ? `${mapped} columns recognised` : "columns matched the model schema", conv.length ? "converted " + conv.join(", ") : "", ...other].filter(Boolean).join(" · ");
+}
+$("external").onclick = async () => {
+  // A raw Open-Meteo (ERA5) download for Shimla, a place and data source the model never saw,
+  // ending the day before the 14 Aug 2023 Shimla landslides. Metadata block and units left as downloaded.
+  $("uErr").textContent = "";
+  try {
+    $("csv").value = await j("/ecorisk-ai/samples/shimla_2023-08-13_openmeteo.csv");
+    $("uSite").value = "__new"; toggleCustom(); $("slope").value = "21"; $("elev").value = "2095"; $("coastal").value = "0";
+    toast("Loaded Shimla, Open-Meteo format");
+  } catch (e) { $("uErr").textContent = friendly(e.message); }
+};
+$("run").onclick = async () => {
+  $("uErr").textContent = ""; $("run").disabled = true;
+  const v = $("uSite").value, body = { csv: $("csv").value, horizon: S.h };
+  if (v === "__new") { body.slope = $("slope").value; body.elevation = $("elev").value; body.coastal = $("coastal").value === "1"; } else body.site = v;
+  try {
+    const d = await j("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+    if (v === "__new") { S.site = null; markSelected(); $("siteName").textContent = "Uploaded record · new location"; $("siteMeta").textContent = `Slope ${body.slope}°, elevation ${body.elevation} m · ${noteSummary(d.notes)}`; }
+    else { const s = S.sites.find(x => x.site_id === v); S.site = v; markSelected(); $("site").value = v; $("siteName").textContent = s.name + " · uploaded record"; $("siteMeta").textContent = noteSummary(d.notes); }
+    render(d, v === "__new" ? null : v);
+    $("outlook").scrollIntoView({ behavior: "smooth" });
+  } catch (e) { $("uErr").textContent = friendly(e.message); }
+  finally { $("run").disabled = false; }
+};
+
+
+/* ---------- shared verdict + awareness level ---------- */
+function verdictOf(sp, alert) {
+  if (alert && sp !== null && sp >= 0.4) return { cls: "hot", lvl: 2, t: `Fragile land + extreme rain likely in ${S.h} h`,
+    d: `The land is structurally ${level(sp).toLowerCase()} risk and the forecast is above the alert line. This is the screening flag EcoRisk AI exists to raise. It is not a confirmed disaster warning.` };
+  if (alert) return { cls: "watch", lvl: 1, t: sp === null ? `Extreme rain likely in ${S.h} h` : "Extreme rain likely, land less fragile",
+    d: sp === null ? "An extreme-rainfall trigger is forecast. Without a structural score, treat this as a weather alert only." : "An extreme-rainfall trigger is forecast, but the land and terrain score low on structural risk." };
+  if (sp !== null && sp >= 0.7) return { cls: "watch", lvl: 1, t: "Fragile land, no trigger forecast", d: `Structurally high risk, but no extreme-rainfall trigger in the next ${S.h} hours. Watch, don't alarm.` };
+  return { cls: "", lvl: 0, t: "No elevated concern right now", d: `Neither model is raising a flag for the next ${S.h} hours.` };
+}
+function setLevel(l) { document.querySelectorAll("#levels .lvl").forEach(e => e.classList.toggle("cur", +e.dataset.l === l)); }
+let OUT = null; // last outlook, for "copy"
+
+/* ---------- toast + copy ---------- */
+function toast(msg) { const t = $("toast"); t.textContent = msg; t.classList.add("show"); clearTimeout(t._h); t._h = setTimeout(() => t.classList.remove("show"), 1800); }
+$("copy").onclick = async () => {
+  if (!OUT) return;
+  const txt = `EcoRisk AI outlook: ${OUT.name}, ${OUT.date}\nStructural risk: ${OUT.sr}\nExtreme rain in next ${S.h} h: ${OUT.fr}\n${OUT.v}\nAlways follow official IMD/NDMA warnings. Helpline 112 / 1078.`;
+  try { await navigator.clipboard.writeText(txt); toast("Outlook copied"); return; } catch { /* fall back below */ }
+  const ta = document.createElement("textarea"); ta.value = txt; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.opacity = "0";
+  document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch { ok = false; }
+  ta.remove(); toast(ok ? "Outlook copied" : "Copy blocked here. Select the outlook text instead.");
+};
+$("toCalc").onclick = () => {
+  const id = S.site && S.risk.by[S.site] ? S.site : "wayanad";
+  $("cSite").value = id; $("cMonth").value = String(new Date(($("date").value || "2024-07-15") + "T00:00:00Z").getUTCMonth() + 1);
+  loadBase(true); $("calc").scrollIntoView();
+};
+
+/* ---------- structural model, client-side (exact coefficients from ml/model_results.json) ---------- */
+function structural(x) {
+  const mp = S.risk.model_params; let z = mp.intercept;
+  mp.feature_cols.forEach((c, i) => { z += mp.coefficients[i] * (x[c] - mp.scaler_mean[i]) / mp.scaler_scale[i]; });
+  return 1 / (1 + Math.exp(-z));
+}
+
+/* ---------- gauges ---------- */
+function arc(p) { const a = Math.PI * (1 - Math.min(1, Math.max(0, p))), r = 50, cx = 60, cy = 62;
+  return `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${(cx + r * Math.cos(a)).toFixed(2)} ${(cy - r * Math.sin(a)).toFixed(2)}`; }
+const REDUCED = matchMedia("(prefers-reduced-motion: reduce)").matches;
+function gauge(id, p, color, mark) {
+  const el = $(id), from = el._p ?? 0, t0 = performance.now(), dur = REDUCED ? 0 : 350;
+  const m = mark == null ? "" : (() => { const a = Math.PI * (1 - mark); return `<line x1="${60 + 40 * Math.cos(a)}" y1="${62 - 40 * Math.sin(a)}" x2="${60 + 58 * Math.cos(a)}" y2="${62 - 58 * Math.sin(a)}" stroke="var(--danger)" stroke-width="2"/>`; })();
+  const draw = (v) => { el.innerHTML = `<path d="${arc(1)}" stroke="var(--track)" stroke-width="10" fill="none" stroke-linecap="round"/>` +
+    (v > 0.003 ? `<path d="${arc(v)}" stroke="${color}" stroke-width="10" fill="none" stroke-linecap="round"/>` : "") + m; };
+  cancelAnimationFrame(el._raf);
+  const step = (now) => { const k = dur ? Math.min(1, (now - t0) / dur) : 1, e = 1 - Math.pow(1 - k, 3), v = from + (p - from) * e; draw(v); if (k < 1) el._raf = requestAnimationFrame(step); else el._p = p; };
+  el._raf = requestAnimationFrame(step);
+}
+
+/* ---------- calculator ---------- */
+const WX = [
+  { k: "rain_1d", l: "Rain today", min: 0, max: 200, step: 1, u: " mm" },
+  { k: "rain_3d", l: "Rain, last 3 days", min: 0, max: 350, step: 1, u: " mm" },
+  { k: "rain_7d", l: "Rain, last 7 days", min: 0, max: 500, step: 1, u: " mm" },
+  { k: "rain_30d", l: "Rain, last 30 days", min: 0, max: 1200, step: 5, u: " mm" },
+  { k: "wet_days_7d", l: "Wet days this week", min: 0, max: 7, step: 1, u: "" },
+  { k: "rh2m", l: "Humidity", min: 10, max: 100, step: 1, u: "%" },
+  { k: "ps_chg_3d", l: "Pressure change, 3 days", min: -1.5, max: 1, step: 0.05, u: " kPa", ends: ["falling (storm)", "rising"] },
+  { k: "t2m", l: "Temperature", min: -10, max: 40, step: 0.5, u: "°C" }];
+const WX_PRESETS = [
+  ["Typical day", null],
+  ["Heavy monsoon week", { rain_1d: 35, rain_3d: 90, rain_7d: 180, rain_30d: 500, wet_days_7d: 7, rh2m: 92, ps_chg_3d: -0.2 }],
+  ["Cloudburst", { rain_1d: 120, rain_3d: 160, rain_7d: 220, rain_30d: 450, wet_days_7d: 6, rh2m: 97, ps_chg_3d: -0.5 }],
+  ["Cyclone approaching", { rain_1d: 60, rain_3d: 90, rain_7d: 110, rain_30d: 200, wet_days_7d: 4, rh2m: 90, ps_chg_3d: -1.2 }],
+  ["Dry spell", { rain_1d: 0, rain_3d: 0, rain_7d: 0, rain_30d: 10, wet_days_7d: 0, rh2m: 45, ps_chg_3d: 0.2 }]];
+let LAND = [];
+const C = { base: null, wx: {}, land: {}, measured: null, seq: 0, timer: null };
+
+function slider(host, d, val, on) {
+  const w = document.createElement("div"); w.className = "sl";
+  const fmtv = (v) => (d.fmt ? d.fmt(v) : (+v).toFixed(d.step >= 1 ? 0 : d.step >= 0.5 ? 1 : d.step >= 0.01 ? 2 : 4)) + (d.u || "");
+  w.innerHTML = `<div class="top"><label for="s_${d.k}">${d.l}</label><output id="o_${d.k}">${fmtv(val)}</output></div>
+    <input type="range" id="s_${d.k}" min="${d.min}" max="${d.max}" step="${d.step}" value="${val}">
+    ${d.ends ? `<div class="ends"><span>${d.ends[0]}</span><span>${d.ends[1]}</span></div>` : ""}`;
+  host.appendChild(w);
+  const inp = w.querySelector("input"), fill = () => inp.style.setProperty("--fill", ((inp.value - d.min) / (d.max - d.min) * 100) + "%");
+  fill();
+  inp.oninput = () => { $(`o_${d.k}`).textContent = fmtv(inp.value); fill(); on(d.k, +inp.value); };
+  d.set = (v) => { inp.value = v; $(`o_${d.k}`).textContent = fmtv(inp.value); fill(); };
+}
+function buildCalc() {
+  const R = S.risk.ranking, rng = (k) => [Math.min(...R.map(r => r[k])), Math.max(...R.map(r => r[k]))];
+  const nd = rng("ndvi_trend_slope"), nb = rng("ndbi_trend_slope"), sl = rng("mean_slope_degrees"), el = rng("elevation_mean_m"), ra = rng("rainfall_anomaly_pct");
+  LAND = [
+    { k: "ndvi_trend_slope", l: "Vegetation trend (NDVI)", min: nd[0], max: nd[1], step: 0.0005, u: "/yr", ends: ["losing green cover", "greening"] },
+    { k: "ndbi_trend_slope", l: "Construction trend (NDBI)", min: nb[0], max: nb[1], step: 0.0005, u: "/yr", ends: ["less built-up", "building boom"] },
+    { k: "mean_slope_degrees", l: "Slope", min: Math.floor(sl[0]), max: Math.ceil(sl[1]), step: 0.5, u: "°" },
+    { k: "elevation_mean_m", l: "Elevation", min: 0, max: Math.ceil(el[1] / 100) * 100, step: 10, u: " m" },
+    { k: "rainfall_anomaly_pct", l: "Season rainfall vs. normal", min: Math.floor(ra[0]), max: Math.ceil(ra[1]), step: 1, u: "%", fmt: (v) => (v > 0 ? "+" : "") + Math.round(v) }];
+  $("wxPresets").innerHTML = WX_PRESETS.map((p, i) => `<button type="button" class="chip${i ? "" : " on"}" data-i="${i}">${p[0]}</button>`).join("");
+  $("landPresets").innerHTML = [["As measured", "m"], ["Forest loss + construction boom", "bad"], ["Restore green cover", "good"]]
+    .map(([t, k], i) => `<button type="button" class="chip${i ? "" : " on"}" data-k="${k}">${t}</button>`).join("");
+  $("wxPresets").onclick = (e) => { const b = e.target.closest(".chip"); if (!b) return; applyWx(WX_PRESETS[+b.dataset.i][1]); chipOn("wxPresets", b); };
+  $("landPresets").onclick = (e) => { const b = e.target.closest(".chip"); if (!b) return; applyLand(b.dataset.k); chipOn("landPresets", b); };
+  const opts = S.sites.filter(x => S.risk.by[x.site_id]).map(x => `<option value="${x.site_id}">${x.name.split(",")[0]}</option>`).join("");
+  $("cSite").innerHTML = opts; $("cSite").value = "wayanad";
+  $("cMonth").innerHTML = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"].map((m, i) => `<option value="${i + 1}">${m}</option>`).join("");
+  $("cMonth").value = "7";
+  $("cSite").onchange = () => loadBase(true); $("cMonth").onchange = () => loadBase(false); $("cReset").onclick = () => loadBase(true);
+}
+function chipOn(host, b) { $(host).querySelectorAll(".chip").forEach(c => c.classList.toggle("on", c === b)); }
+async function loadBase(resetLand) {
+  const site = $("cSite").value, r = S.risk.by[site];
+  const d = await j(`/api/base?site=${site}&month=${$("cMonth").value}`);
+  C.base = d.row;
+  WX.forEach(w => { C.wx[w.k] = Math.min(w.max, Math.max(w.min, +C.base[w.k])); });
+  if (resetLand || !C.measured || C.site !== site) {
+    C.measured = { ndvi_trend_slope: r.ndvi_trend_slope, ndbi_trend_slope: r.ndbi_trend_slope, mean_slope_degrees: r.mean_slope_degrees,
+      elevation_mean_m: r.elevation_mean_m, rainfall_anomaly_pct: r.rainfall_anomaly_pct, terrain_is_coastal: r.terrain_type === "coastal" ? 1 : 0, lst_trend_slope: r.lst_trend_slope ?? 0 };
+    C.land = { ...C.measured }; C.site = site;
+    chipOn("landPresets", $("landPresets").querySelector(".chip"));
+  }
+  chipOn("wxPresets", $("wxPresets").querySelector(".chip"));
+  $("wxSliders").innerHTML = ""; $("landSliders").innerHTML = "";
+  WX.forEach(w => slider($("wxSliders"), w, C.wx[w.k], onWx));
+  LAND.forEach(w => slider($("landSliders"), w, C.land[w.k], onLand));
+  recalc();
+}
+function onWx(k, v) {
+  C.wx[k] = v;
+  const chain = ["rain_1d", "rain_3d", "rain_7d", "rain_30d"], i = chain.indexOf(k);
+  if (i >= 0) { // keep rainfall windows consistent: a longer window can never hold less rain
+    for (let a = i + 1; a < chain.length; a++) if (C.wx[chain[a]] < C.wx[chain[a - 1]]) { C.wx[chain[a]] = C.wx[chain[a - 1]]; WX.find(w => w.k === chain[a]).set(C.wx[chain[a]]); }
+    for (let a = i - 1; a >= 0; a--) if (C.wx[chain[a]] > C.wx[chain[a + 1]]) { C.wx[chain[a]] = C.wx[chain[a + 1]]; WX.find(w => w.k === chain[a]).set(C.wx[chain[a]]); }
+  }
+  chipOn("wxPresets", null); recalc();
+}
+function onLand(k, v) { C.land[k] = v; chipOn("landPresets", null); recalc(); }
+function applyWx(p) {
+  WX.forEach(w => { C.wx[w.k] = p && p[w.k] != null ? p[w.k] : Math.min(w.max, Math.max(w.min, +C.base[w.k])); w.set(C.wx[w.k]); });
+  recalc();
+}
+function applyLand(k) {
+  C.land = { ...C.measured };
+  const ndvi = LAND[0], ndbi = LAND[1];
+  if (k === "bad") { C.land.ndvi_trend_slope = ndvi.min; C.land.ndbi_trend_slope = ndbi.max; }
+  if (k === "good") { C.land.ndvi_trend_slope = ndvi.max; C.land.ndbi_trend_slope = ndbi.min; }
+  LAND.forEach(w => w.set(C.land[w.k])); recalc();
+}
+function whatifRow() {
+  const b = C.base, w = C.wx, L = C.land, month = +$("cMonth").value, doy = month * 30.44 - 15;
+  const a = 17.62, bb = 243.12, g = Math.log(Math.max(1, w.rh2m) / 100) + a * w.t2m / (bb + w.t2m), dew = bb * g / (a - g);
+  return { ...b, ...w, rain_14d: w.rain_7d + (w.rain_30d - w.rain_7d) * 7 / 23, rain_accel: w.rain_3d - (w.rain_7d - w.rain_3d) * 3 / 4,
+    ps_chg_1d: w.ps_chg_3d / 2, dew_spread: w.t2m - dew, doy_sin: Math.sin(2 * Math.PI * doy / 365.25), doy_cos: Math.cos(2 * Math.PI * doy / 365.25),
+    ndvi_trend_slope: L.ndvi_trend_slope, ndbi_trend_slope: L.ndbi_trend_slope, mean_slope_degrees: L.mean_slope_degrees,
+    elevation_mean_m: L.elevation_mean_m, terrain_is_coastal: L.terrain_is_coastal };
+}
+function recalc() {
+  // structural: instant, in the browser
+  const sp = structural(C.land), sm = structural(C.measured), dlt = (sp - sm) * 100;
+  gauge("gS", sp, lvlColor(sp));
+  $("cSV").innerHTML = `<span style="color:${lvlColor(sp)}">${pct(sp)}</span>`;
+  $("cSD").innerHTML = `${level(sp)}. ` + (Math.abs(dlt) < 0.5 ? "Same as measured." : `<span class="delta ${dlt > 0 ? "up" : "down"}">${dlt > 0 ? "+" : ""}${dlt.toFixed(0)} pts</span> vs. this site as measured (${pct(sm)}).`);
+  C.sp = sp;
+  // 72 h: trained model on the server, debounced
+  clearTimeout(C.timer);
+  C.timer = setTimeout(async () => {
+    const seq = ++C.seq;
+    try {
+      const r = await j("/api/whatif", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ row: whatifRow(), horizon: S.h }) });
+      if (seq !== C.seq) return;
+      gauge("gF", r.prob, r.alert ? "var(--danger)" : "var(--accent)", Math.min(1, r.threshold));
+      $("cFV").innerHTML = `<span style="color:${r.alert ? "var(--danger)" : "var(--text)"}">${pct(r.prob)}</span>`;
+      $("cFD").textContent = r.alert ? `Above the ${pct(r.threshold, 1)} alert line.` : `Below the ${pct(r.threshold, 1)} alert line (red tick).`;
+      const odd = oddText(r.unfamiliar); $("cOdd").textContent = odd; $("cOdd").classList.toggle("hide", !odd);
+      const v = verdictOf(C.sp, r.alert);
+      $("cVerdict").className = "well verdict " + v.cls; $("cVT").textContent = v.t; $("cVD").textContent = v.d;
+      const f = (r.top_factors || "").split(";").map(x => x.trim()).filter(Boolean).map(x => { const m = x.match(/^(\S+) \(\+([\d.]+)\)$/); return m ? `<b>${nice(m[1])}</b> (+${(parseFloat(m[2]) * 100).toFixed(0)} pts)` : x; });
+      $("cWhy").innerHTML = f.length ? `Pushing the ${S.h} h forecast up versus a typical day: ${f.join(", ")}.` : `Nothing is pushing the ${S.h} h forecast above a typical day.`;
+    } catch (e) { $("cWhy").textContent = friendly(e.message); }
+  }, 120);
+}
+
+/* ---------- awareness: human-activity box + quiz ---------- */
+function humanBox(id) {
+  const r = S.risk.by[id] || S.risk.by.wayanad, nm = (S.sites.find(x => x.site_id === r.site_id) || {}).name || r.site_id;
+  const meas = { ndvi_trend_slope: r.ndvi_trend_slope, ndbi_trend_slope: r.ndbi_trend_slope, mean_slope_degrees: r.mean_slope_degrees, elevation_mean_m: r.elevation_mean_m,
+    rainfall_anomaly_pct: r.rainfall_anomaly_pct, terrain_is_coastal: r.terrain_type === "coastal" ? 1 : 0, lst_trend_slope: r.lst_trend_slope ?? 0 };
+  const R = S.risk.ranking, bad = { ...meas, ndvi_trend_slope: Math.min(...R.map(x => x.ndvi_trend_slope)), ndbi_trend_slope: Math.max(...R.map(x => x.ndbi_trend_slope)) };
+  const good = { ...meas, ndvi_trend_slope: Math.max(...R.map(x => x.ndvi_trend_slope)), ndbi_trend_slope: Math.min(...R.map(x => x.ndbi_trend_slope)) };
+  const a = structural(meas), b = structural(bad), c = structural(good);
+  $("human").innerHTML = `<div class="big">At <b>${nm.split(",")[0]}</b>, EcoRisk AI puts structural risk at <b>${pct(a)}</b>. If its hillsides lost vegetation and construction grew at the fastest rates we measured anywhere, the same model says <b style="color:var(--danger)">${pct(b)}</b>. Restoring green cover instead: <b style="color:var(--ok)">${pct(c)}</b>.
+    <div class="note" style="margin-top:6px">Same terrain, same rainfall history. Only the human-activity trends change. These are the model's learned associations from ${S.risk.n_sites_real} real sites, not a physical simulation.</div></div>
+    <button type="button" class="sec" id="humanGo">Try it in the calculator</button>`;
+  $("humanGo").onclick = () => { $("cSite").value = r.site_id; loadBase(true).then(() => { applyLand("bad"); chipOn("landPresets", $("landPresets").querySelector('[data-k="bad"]')); $("calc").scrollIntoView(); }); };
+}
+function buildQuiz() {
+  const fi = Object.entries(S.risk.feature_importance).sort((a, b) => b[1] - a[1]), top = fi[0][0], c = S.res.models[S.res.chosen_model];
+  const others = ["mean_slope_degrees", "elevation_mean_m", "ndbi_trend_slope", "ndvi_trend_slope"].filter(k => k !== top).slice(0, 3);
+  const Q = [
+    { q: "In EcoRisk AI's structural model, which factor raises a site's risk the most?", o: [top, ...others].map(nice), a: 0,
+      e: `${nice(top)} has the largest positive coefficient (+${S.risk.feature_importance[top].toFixed(2)}). Human-activity trends matter too, but less.` },
+    { q: "A hillside is losing green cover year after year. What does the model learn?", o: ["Risk goes up", "Risk goes down", "No effect"], a: 0,
+      e: `The vegetation-trend coefficient is ${S.risk.feature_importance.ndvi_trend_slope.toFixed(2)}: greening lowers risk, so losing vegetation raises it.` },
+    { q: "EcoRisk AI shows an extreme-rain ALERT. What does that mean?", o: ["A disaster is certain", "Elevated chance: prepare and follow official warnings", "Nothing, ignore it"], a: 1,
+      e: `About ${pct(c.precision)} of alerts are followed by extreme rain within 72 h. It's a reason to prepare, not a certainty.` },
+    { q: "You notice new cracks in the ground and walls on a slope after heavy rain. What should you do?", o: ["Wait and watch", "Move away to stable ground and inform the district control room (1077)", "Fill the cracks with soil"], a: 1,
+      e: "New cracks are a classic landslide warning sign. Leave first, then report it." }];
+  let i = 0, score = 0;
+  const show = () => {
+    if (i >= Q.length) {
+      $("quiz").innerHTML = `<p class="q">You scored ${score}/${Q.length}.</p><p class="note">Share what you learned: knowing the warning signs saves lives.</p><button type="button" class="sec" id="qAgain">Try again</button>`;
+      $("qAgain").onclick = () => { i = 0; score = 0; show(); }; return;
+    }
+    const x = Q[i];
+    $("quiz").innerHTML = `<p class="q">Quick check ${i + 1}/${Q.length}: ${x.q}</p><div class="opts">${x.o.map((o, k) => `<button type="button" data-k="${k}">${o}</button>`).join("")}</div><div class="fb" id="qfb"></div>
+      <div class="qfoot"><span>Score ${score}</span><button type="button" class="sec hide" id="qNext">Next</button></div>`;
+    $("quiz").querySelectorAll(".opts button").forEach(b => b.onclick = () => {
+      const k = +b.dataset.k, ok = k === x.a; if (ok) score++;
+      $("quiz").querySelectorAll(".opts button").forEach(bb => { bb.disabled = true; if (+bb.dataset.k === x.a) bb.classList.add("right"); });
+      if (!ok) b.classList.add("wrong");
+      $("qfb").textContent = (ok ? "Correct. " : "Not quite. ") + x.e; $("qNext").classList.remove("hide"); $("qNext").focus();
+      $("qNext").onclick = () => { i++; show(); };
+    });
+  };
+  show();
+}
+
+/* ---------- nav: highlight the section in view ---------- */
+function navSpy() {
+  // The active link is the last section whose top has passed 35% of the viewport height.
+  const links = [...document.querySelectorAll('#nav a[href^="#"]')];
+  const secs = links.map(a => $(a.getAttribute("href").slice(1))).filter(Boolean);
+  let cur = null, queued = false;
+  const update = () => {
+    queued = false;
+    const line = innerHeight * 0.35;
+    let id = secs[0].id;
+    for (const s of secs) if (s.getBoundingClientRect().top <= line) id = s.id;
+    if (innerHeight + scrollY >= document.documentElement.scrollHeight - 4) id = secs[secs.length - 1].id;
+    if (id === cur) return; cur = id;
+    const nav = $("nav");
+    links.forEach(a => {
+      const on = a.getAttribute("href") === "#" + id; a.classList.toggle("on", on);
+      // keep the active link visible in the (horizontally scrollable) bar. Scroll ONLY the bar:
+      // element.scrollIntoView would cancel the page's own smooth scroll after a nav click.
+      if (on && (a.offsetLeft < nav.scrollLeft || a.offsetLeft + a.offsetWidth > nav.scrollLeft + nav.clientWidth)) nav.scrollLeft = a.offsetLeft - 24;
+    });
+  };
+  addEventListener("scroll", () => { if (!queued) { queued = true; requestAnimationFrame(update); } }, { passive: true });
+  // In-page links scroll explicitly to the section's exact position. Native fragment scrolling
+  // misbehaved when the address already held that fragment and content above had just re-rendered
+  // (it scrolled the wrong way after finishing the quiz).
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href^="#"]'); if (!a) return;
+    const el = document.getElementById(a.getAttribute("href").slice(1)); if (!el) return;
+    e.preventDefault();
+    const top = el.getBoundingClientRect().top + scrollY - (document.querySelector(".navbar")?.offsetHeight || 0) - 6;
+    window.scrollTo({ top: Math.max(0, top), behavior: REDUCED ? "auto" : "smooth" });
+    history.replaceState(null, "", "#" + el.id);
+  });
+  addEventListener("resize", update); update();
+}
+function heroStats() {
+  const res = S.res, ev = res.recorded_event_backtest;
+  $("heroStats").innerHTML = [[S.sites.length, "sites across India"], ["30 yrs", "of daily weather"], [(res.n_train + res.n_val + res.n_test).toLocaleString(), "site-days learned from"],
+    [`${ev.filter(e => e.alert_raised).length}/${ev.length}`, "recent disasters flagged in advance"]].map(([b, t]) => `<div><b>${b}</b>${t}</div>`).join("");
+}
+
+
+/* ================= DECISION CENTER: Predict -> Impact -> Act ================= */
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const inr = (x) => "₹" + Math.round(x).toLocaleString("en-IN");
+// Business types: what is exposed, what is most affected, and the action playbook (rules, not ML).
+const BIZ = {
+  logistics: { unit: "Active deliveries", unitShort: "deliveries", verb: "disrupted",
+    affected: (P) => P.slope && P.flood ? "Delivery routes over hill roads and flood-prone crossings" : P.slope ? "Delivery routes over steep hill roads" : P.flood ? "Delivery routes crossing flood-prone roads" : P.low ? "Hub access roads in a low-lying area" : "Delivery routes and turnaround times",
+    act: (P, H) => [
+      ["R", P.alt ? `Reroute through ${P.alt}` : "Switch to your alternate route", P.slope || P.flood ? "Avoid steep road cuts and low crossings while the risk window is open." : "Use roads away from slopes and river crossings."],
+      ["D", `Delay dispatch on exposed routes for the next ${H} h`, "Hold non-urgent loads; prioritise time-critical deliveries on safe routes."],
+      ["N", "Tell customers about possible delays now", "Proactive notice costs less than missed delivery windows."]],
+    prep: (P, H) => [["V", "Pre-position vehicles and fuel on the safe side", `Be ready to switch routes if the ${H} h forecast rises.`], ["C", "Confirm drivers can reach dispatch by the alternate route", "Share the plan before conditions worsen."]],
+    watch: (P, H) => [["M", "Run as normal and re-check tomorrow", "No change needed for this window."]] },
+  warehouse: { unit: "Pallets at ground level", unitShort: "pallets", verb: "at risk of water damage",
+    affected: (P) => P.low ? "Ground-level stock and loading docks in a low-lying site" : "Ground-level inventory, docks and inbound trucks",
+    act: (P, H) => [
+      ["I", "Move vulnerable inventory off the floor", "Raise electronics, paper goods and food to upper racks first."],
+      ["S", "Clear drains and place sandbags at dock doors", "Most warehouse water damage enters through docks and drains."],
+      ["T", `Reschedule inbound trucks for the next ${H} h`, P.alt ? `Or redirect them to ${P.alt}.` : "Avoid unloading in heavy rain."]],
+    prep: (P, H) => [["C", "Check drains, pumps and roof gutters today", "Cheap to fix before rain, expensive after."], ["L", "List what moves first if the risk rises", "A ready list makes the switch fast."]],
+    watch: (P, H) => [["M", "Operate as normal", "Re-check the forecast before the next inbound wave."]] },
+  retail: { unit: "Supplier deliveries due", unitShort: "deliveries", verb: "delayed",
+    affected: (P) => P.flood || P.low ? "Store access, deliveries and footfall" : "Supplier deliveries and customer footfall",
+    act: (P, H) => [
+      ["E", "Stock essentials early", "Water, batteries, torches and staples sell out before heavy rain."],
+      ["P", `Cut perishable orders for the next ${H} h`, "Lower footfall plus delivery delays means more spoilage."],
+      ["W", "Plan staff travel and safer hours", P.alt ? `Use ${P.alt} for staff and stock.` : "Let staff on exposed routes leave early."]],
+    prep: (P, H) => [["S", "Check stock levels of rain essentials", "Order now if they are low."], ["A", "Agree a closing rule with staff", "Know in advance when you will shut early."]],
+    watch: (P, H) => [["M", "Trade as normal", "No adjustment needed for this window."]] },
+  construction: { unit: "Workers on site", unitShort: "workers", verb: "affected",
+    affected: (P) => P.slope ? "Excavation, slope cutting and scaffolding" : P.low ? "Excavations and equipment on low ground" : "Earthworks, scaffolding and site access",
+    act: (P, H) => [
+      ["X", `Pause excavation and slope work for the next ${H} h`, "Saturated cuts and trenches are the main collapse risk."],
+      ["E", "Move equipment and materials to high, stable ground", P.alt ? `Stage them at ${P.alt}.` : "Keep access routes clear for evacuation."],
+      ["D", "Inspect drainage and secure loose materials", "Check again after the rain before restarting."]],
+    prep: (P, H) => [["B", "Brief crews on stop-work triggers", "New cracks, seepage or rising water mean stop."], ["D", "Clear site drains and cover open trenches", "Reduce the work needed if the risk rises."]],
+    watch: (P, H) => [["M", "Continue planned work", "Re-check before starting any slope or excavation work."]] }
+};
+const PROFILE_DEFAULTS = {
+  logistics: { name: "Wayanad delivery hub", units: 34, loss: 60000, cost: 5000, alt: "Route B via Kalpetta", slope: true, flood: false, low: false },
+  warehouse: { name: "Riverside warehouse", units: 120, loss: 400000, cost: 15000, alt: "", slope: false, flood: false, low: true },
+  retail: { name: "Main bazaar store", units: 6, loss: 45000, cost: 3000, alt: "", slope: false, flood: true, low: false },
+  construction: { name: "Hillside housing project", units: 40, loss: 250000, cost: 20000, alt: "Upper laydown yard", slope: true, flood: false, low: false } };
+const PKEY = "ecorisk.profile.v1";
+let PROF = {};
+function loadProfiles() { try { PROF = JSON.parse(localStorage.getItem(PKEY) || "{}") || {}; } catch { PROF = {}; } }
+function saveProfiles() { try { localStorage.setItem(PKEY, JSON.stringify(PROF)); } catch { /* storage blocked: keep in memory */ } }
+function profile() { const t = $("bType").value; return { ...PROFILE_DEFAULTS[t], ...(PROF[t] || {}), type: t, edited: !!PROF[t] }; }
+function fillProfileForm() {
+  const P = profile(); $("pfUnitLbl").textContent = BIZ[P.type].unit;
+  $("pfName").value = P.name; $("pfUnits").value = P.units; $("pfLoss").value = P.loss; $("pfCost").value = P.cost; $("pfAlt").value = P.alt;
+  $("pfSlope").checked = P.slope; $("pfFlood").checked = P.flood; $("pfLow").checked = P.low;
+}
+function readProfileForm() {
+  const t = $("bType").value, num = (id) => Math.max(0, +$(id).value || 0);
+  PROF[t] = { name: $("pfName").value.trim(), units: num("pfUnits"), loss: num("pfLoss"), cost: num("pfCost"), alt: $("pfAlt").value.trim(),
+    slope: $("pfSlope").checked, flood: $("pfFlood").checked, low: $("pfLow").checked };
+  saveProfiles();
+}
+function valueAt(h, ratio) {
+  const c = S.hz.windows[String(h)].value_curve_test; if (!(ratio > 0)) return null;
+  if (ratio < c[0].ratio || ratio > c[c.length - 1].ratio) return null;
+  return c.reduce((a, b) => Math.abs(Math.log(b.ratio / ratio)) < Math.abs(Math.log(a.ratio / ratio)) ? b : a);
+}
+function baseRate(siteId, dateStr) {
+  const w = S.hz.windows[String(S.h)], mo = new Date(dateStr + "T00:00:00Z").getUTCMonth() + 1;
+  const site = siteId && w.base_rate_site_month[siteId] ? w.base_rate_site_month[siteId][mo] : null;
+  return site != null ? { rate: site, label: `${(S.sites.find(x => x.site_id === siteId) || {}).name?.split(",")[0] || siteId} in ${MONTHS[mo - 1]}` }
+                      : { rate: w.base_rate_month_all[mo], label: `a typical study site in ${MONTHS[mo - 1]}` };
+}
+let PLAN = null;
+function renderDecision(d, siteId) {
+  if (!d || !S.hz) return;
+  const last = d.rows[d.rows.length - 1], p = last.prob_extreme_rain_next_3d, P = profile(), B = BIZ[P.type], H = S.h;
+  const r = siteId && S.risk.by[siteId], sp = r ? r.predicted_risk_prob : null;
+  const site = S.sites.find(x => x.site_id === siteId);
+  // ---- Predict
+  const br = baseRate(siteId, last.date), rr = br.rate > 0 ? p / br.rate : null;
+  $("pEvent").textContent = `Extreme rainfall within ${H} h` + (site && site.extreme_mm ? ` (≥ ${site.extreme_mm} mm in a day)` : "");
+  $("pProb").innerHTML = `<span style="color:${last.alert ? "var(--danger)" : "var(--text)"}">${p < 0.001 ? "&lt;0.1%" : pct(p, p < 0.1 ? 1 : 0)}</span>`;
+  $("pRel").innerHTML = rr == null ? (br.rate === 0 ? `No extreme-rain day was recorded for ${br.label} in 1995–2018` : "") : `<b style="color:${rr >= 3 ? "var(--danger)" : rr >= 1.5 ? "var(--warn)" : "var(--text)"}">${rr >= 10 ? Math.round(rr) : rr.toFixed(1)}×</b> the normal chance for ${br.label} (${pct(br.rate, 1)})`;
+  $("pKv").innerHTML = [["Model alert", last.alert ? `<span style="color:var(--danger)">Above the ${pct(d.threshold, 1)} line</span>` : `Below the ${pct(d.threshold, 1)} line`],
+    ["Land fragility", r ? `${level(sp)} (${pct(sp)})` : "Not scored"], ["As of", last.date]].map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("") +
+    (last.unfamiliar ? `<dt style="color:var(--accent2)">Caution</dt><dd style="color:var(--accent2)">Beyond training experience</dd>` : "");
+  // ---- Impact (published rule)
+  const ratio = P.loss > 0 ? P.cost / P.loss : null, worth = ratio != null && p >= ratio;
+  // "N x normal" only counts once the chance itself is meaningful (>= half the model's alert line):
+  // 0.4% can be 4x normal in a dry month, but it is not a reason to disrupt an operation.
+  const raised = rr != null && rr >= 3 && p >= 0.5 * d.threshold;
+  const trigger = worth || last.alert || raised;
+  const fragile = sp != null && sp >= 0.7, exposed = P.slope || P.flood || P.low, amplified = fragile || exposed;
+  const why = [];
+  if (worth) why.push(`Probability ${pct(p, 1)} is above your break-even ${pct(ratio, 1)} (cost ÷ loss)`);
+  if (last.alert) why.push("The model's own alert line is crossed");
+  if (raised) why.push(`${rr.toFixed(1)}× the normal chance for this place and month`);
+  if (trigger && fragile) why.push("The land here is structurally fragile");
+  if (trigger && exposed) why.push("Your routes or site are in exposed terrain");
+  // Published ladder (a rule, not a model)
+  const LV = last.alert && worth && amplified ? ["Severe disruption", "var(--danger)"]
+    : last.alert || (worth && amplified) ? ["High disruption", "var(--danger)"]
+    : worth || raised ? ["Moderate disruption", "var(--warn)"] : ["Low disruption", "var(--ok)"];
+  $("iLevel").textContent = LV[0]; $("iLevel").style.color = LV[1]; $("iLevel").style.borderColor = LV[1];
+  const expUnits = P.units * p, expLoss = P.loss * p;
+  $("iKv").innerHTML = [["Most affected", B.affected(P)], ["Exposure", `${P.units.toLocaleString("en-IN")} ${B.unitShort}`],
+    [`Expected ${B.verb}`, `≈ ${expUnits < 1 ? expUnits.toFixed(1) : Math.round(expUnits)} ${B.unitShort}`],
+    ["Expected loss if you do nothing", inr(expLoss)], ["Cost to protect", inr(P.cost)]].map(([a, b]) => `<dt>${a}</dt><dd>${b}</dd>`).join("");
+  $("iWhy").innerHTML = trigger ? why.map(w => `<li>${w}</li>`).join("")
+    : `<li>No weather trigger in this window${sp != null && sp >= 0.7 ? ". The land is fragile, so this changes quickly if heavy rain is forecast" : ""}.</li>`;
+  // ---- Act (cost-loss decision + playbook)
+  let dec, col, recs;
+  if (worth) { dec = "Act now"; col = "var(--danger)"; recs = B.act(P, H); }
+  else if (last.alert || raised) { dec = "Prepare"; col = "var(--warn)"; recs = B.prep(P, H); }
+  else { dec = "Monitor"; col = "var(--ok)"; recs = B.watch(P, H); }
+  const reason = worth ? `Expected loss ${inr(expLoss)} is more than the ${inr(P.cost)} it costs to protect.`
+    : dec === "Prepare" ? (ratio != null && P.cost > expLoss ? `Risk is elevated, but full protection (${inr(P.cost)}) costs more than the expected loss (${inr(expLoss)}). Take the cheap steps now.` : "Risk is elevated. Take the cheap steps now.")
+    : "No weather trigger in this window.";
+  $("aDecision").innerHTML = `<span style="color:${col}">${dec}</span><div style="font-size:12px;font-weight:400;color:var(--text-dim);margin-top:2px">${reason}</div>`;
+  $("aRecs").innerHTML = recs.slice(0, 3).map(([ic, t, sub]) => `<li><span class="ic" aria-hidden="true">${ic}</span><div><b>${t}</b><span>${sub}</span></div></li>`).join("");
+  const v = ratio != null ? valueAt(H, ratio) : null;
+  $("aRule").innerHTML = ratio == null ? "Enter your cost and loss in the operations profile to get a business decision." :
+    `Rule: act when probability > cost ÷ loss = ${inr(P.cost)} ÷ ${inr(P.loss)} = <b>${pct(ratio, 1)}</b>. ` +
+    (v == null ? "This ratio is outside the range we could test." : v.value > 0.05 ? `On 2022–25 test data, following this rule with the ${H} h forecast captured <b>${pct(v.value)}</b> of perfect-foresight savings versus the best fixed policy.` :
+      `At this ratio the ${H} h forecast adds little over a fixed policy on test data (value ${pct(Math.max(0, v.value))}); consider simply ${ratio < S.hz.windows[String(H)].test_positive_rate ? "always protecting" : "not protecting"}.`) +
+    (P.edited ? "" : " <i>Example profile: edit it below.</i>");
+  PLAN = { P, H, site: site ? site.name : $("siteName").textContent, date: last.date, p, rr, br, dec, recs: recs.slice(0, 3), level: LV[0], expUnits, expLoss, B, ratio };
+  drawValueCurve();
+}
+$("aCopy").onclick = async () => {
+  if (!PLAN) return;
+  const x = PLAN, lines = [`EcoRisk AI action plan: ${x.P.name || x.site}`, `As of ${x.date} · window: next ${x.H} h · ${x.site}`,
+    `PREDICT: extreme rainfall within ${x.H} h, ${pct(x.p, 1)}${x.rr != null ? ` (${x.rr.toFixed(1)}× normal)` : ""}`,
+    `IMPACT: ${x.level}. Exposure ${x.P.units} ${x.B.unitShort}; expected ${x.B.verb} ≈ ${Math.round(x.expUnits)}; expected loss if no action ${inr(x.expLoss)} vs cost to protect ${inr(x.P.cost)}`,
+    `ACT: ${x.dec}`, ...x.recs.map(([, t, sub]) => `- ${t}: ${sub}`), "Follow official IMD/NDMA warnings first. Helplines 112 / 1078."];
+  const txt = lines.join("\n");
+  try { await navigator.clipboard.writeText(txt); toast("Action plan copied"); return; } catch { /* fall back */ }
+  const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand("copy"); } catch { ok = false; } ta.remove(); toast(ok ? "Action plan copied" : "Copy blocked here");
+};
+function drawValueCurve() {
+  if (!S.hz) return;
+  const el = $("vcurve"), W = Math.max(300, el.clientWidth || 600), Ht = 180, L = 36, R = 10, T = 10, Bm = 28;
+  const xs = (r) => L + (Math.log(r) - Math.log(0.005)) / (Math.log(0.8) - Math.log(0.005)) * (W - L - R), ys = (v) => T + (1 - Math.max(0, v)) * (Ht - T - Bm);
+  const col = { 24: "var(--accent)", 48: "var(--slate)", 72: "var(--accent2)" };
+  let s = [0, 0.5, 1].map(v => `<line x1="${L}" x2="${W - R}" y1="${ys(v)}" y2="${ys(v)}" stroke="var(--track)"/><text x="${L - 6}" y="${ys(v) + 3}" text-anchor="end" fill="var(--text-dim)" font-size="10">${v}</text>`).join("");
+  [0.01, 0.03, 0.1, 0.3].forEach(r => { s += `<text x="${xs(r)}" y="${Ht - 10}" text-anchor="middle" fill="var(--text-dim)" font-size="10">${r * 100}%</text>`; });
+  s += `<text x="${W - R}" y="${Ht - 10}" text-anchor="end" fill="var(--slate-bright)" font-size="10">cost ÷ loss</text>`;
+  [24, 48, 72].forEach(h => { const c = S.hz.windows[String(h)].value_curve_test;
+    s += `<polyline fill="none" stroke="${col[h]}" stroke-width="${h === S.h ? 2.6 : 1.3}" opacity="${h === S.h ? 1 : .55}" points="${c.map(q => xs(q.ratio).toFixed(1) + "," + ys(q.value).toFixed(1)).join(" ")}"/>`;
+    const lst = c.reduce((a, b) => b.value > a.value ? b : a); s += `<text x="${xs(lst.ratio)}" y="${ys(lst.value) - 6}" text-anchor="middle" fill="${col[h]}" font-size="10">${h} h</text>`; });
+  const P = profile(), ratio = P.loss > 0 ? P.cost / P.loss : null, v = ratio != null ? valueAt(S.h, ratio) : null;
+  if (v) s += `<circle cx="${xs(v.ratio)}" cy="${ys(v.value)}" r="5" fill="var(--text)" stroke="var(--bg)" stroke-width="2"><title>Your ratio ${pct(ratio, 1)}: value ${pct(Math.max(0, v.value))}</title></circle>`;
+  el.setAttribute("viewBox", `0 0 ${W} ${Ht}`); el.innerHTML = s;
+}
+function setWindow(h) {
+  S.h = h; document.querySelectorAll("#hSeg button").forEach(b => b.classList.toggle("on", +b.dataset.h === h));
+  document.querySelectorAll(".hl").forEach(e => { e.textContent = `${h} h`; });
+}
+let LASTD = null;
+
+/* ---------- boot ---------- */
+(async function init() {
+  try {
+    const [sites, risk, res] = await Promise.all([j("/api/sites"), j("/api/risk"), j("/api/results")]);
+    try { S.ext = await j("/api/external"); } catch { S.ext = null; }
+    S.hz = await j("/api/horizons");
+    risk.by = Object.fromEntries(risk.ranking.map(r => [r.site_id, r]));
+    S.sites = sites.sort((a, b) => (risk.by[b.site_id]?.predicted_risk_prob ?? -1) - (risk.by[a.site_id]?.predicted_risk_prob ?? -1));
+    S.risk = risk; S.res = res;
+    const opts = S.sites.map(s => `<option value="${s.site_id}">${s.name.split(",")[0]}${risk.by[s.site_id] ? "" : " (no structural score)"}</option>`).join("");
+    $("site").innerHTML = opts; $("dSite").innerHTML = opts; $("uSite").innerHTML = opts + `<option value="__new">New location&hellip;</option>`;
+    $("uSite").value = "wayanad"; $("uSite").onchange = toggleCustom; toggleCustom();
+    $("site").onchange = () => choose($("site").value, true);
+    $("replay").onclick = replay;
+    $("dSite").onchange = () => choose($("dSite").value, true);
+    $("dDate").onchange = () => { $("date").value = $("dDate").value; };
+    $("date").addEventListener("change", () => { $("dDate").value = $("date").value; });
+    $("dGo").onclick = () => { $("date").value = $("dDate").value; replay(); };
+    $("hSeg").onclick = (e) => { const b = e.target.closest("button"); if (!b) return; setWindow(+b.dataset.h); replay(); recalc(); fillStatic(); };
+    loadProfiles();
+    $("bType").onchange = () => { fillProfileForm(); if (LASTD) renderDecision(LASTD.d, LASTD.siteId); };
+    $("profile").addEventListener("input", () => { readProfileForm(); if (LASTD) renderDecision(LASTD.d, LASTD.siteId); });
+    fillProfileForm(); setWindow(24);
+    addEventListener("resize", drawValueCurve);
+    drawMap(); fillStatic(); heroStats(); buildCalc(); buildQuiz(); navSpy();
+    choose("wayanad", true); loadBase(true);
+  } catch (e) { $("err").textContent = "Could not load: " + e.message + ". Start the server with python3 ml/ef_server.py"; }
+})();
+</script>
+</body>
+</html>

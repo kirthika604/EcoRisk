@@ -1,0 +1,142 @@
+{
+  "what": "72 h model on 9 unseen locations, ERA5 (Open-Meteo) weather, 2022-2024; labels from the same source",
+  "n_days": 9855,
+  "positive_rate": 0.025,
+  "model": {
+    "roc_auc": 0.8541,
+    "pr_auc": 0.1376,
+    "brier": 0.03489,
+    "precision_at_alert": 0.0832,
+    "recall_at_alert": 0.7398,
+    "alert_rate": 0.222
+  },
+  "model_recalibrated_to_source": {
+    "how": "Platt map on logit(p), fitted on each place's own 1995-2021 history with labels from its own rain",
+    "roc_auc": 0.882,
+    "pr_auc": 0.2374,
+    "brier": 0.0214,
+    "mean_predicted": 0.0274,
+    "precision_at_alert": 0.1675,
+    "recall_at_alert": 0.5691,
+    "alert_rate": 0.0848
+  },
+  "climatology": {
+    "roc_auc": 0.823,
+    "pr_auc": 0.0743,
+    "brier": 0.02357
+  },
+  "mean_predicted_vs_observed": [
+    0.0781,
+    0.025
+  ],
+  "per_place": [
+    {
+      "place": "shimla",
+      "terrain": "hill",
+      "elevation_m": 2095,
+      "slope_deg": 20.6,
+      "extreme_threshold_mm": 43.4,
+      "test_days": 1095,
+      "positive_rate": 0.0164,
+      "roc_auc": 0.85,
+      "roc_auc_recalibrated": 0.85,
+      "climatology_roc_auc": 0.748
+    },
+    {
+      "place": "darjeeling",
+      "terrain": "hill",
+      "elevation_m": 2038,
+      "slope_deg": 20.6,
+      "extreme_threshold_mm": 92.4,
+      "test_days": 1095,
+      "positive_rate": 0.0155,
+      "roc_auc": 0.814,
+      "roc_auc_recalibrated": 0.814,
+      "climatology_roc_auc": 0.839
+    },
+    {
+      "place": "gangtok",
+      "terrain": "hill",
+      "elevation_m": 1587,
+      "slope_deg": 18.3,
+      "extreme_threshold_mm": 108.4,
+      "test_days": 1095,
+      "positive_rate": 0.0082,
+      "roc_auc": 0.822,
+      "roc_auc_recalibrated": 0.822,
+      "climatology_roc_auc": 0.82
+    },
+    {
+      "place": "srinagar",
+      "terrain": "hill",
+      "elevation_m": 1588,
+      "slope_deg": 0.3,
+      "extreme_threshold_mm": 66.6,
+      "test_days": 1095,
+      "positive_rate": 0.0027,
+      "roc_auc": 0.691,
+      "roc_auc_recalibrated": 0.691,
+      "climatology_roc_auc": 0.6
+    },
+    {
+      "place": "itanagar",
+      "terrain": "hill",
+      "elevation_m": 265,
+      "slope_deg": 7.2,
+      "extreme_threshold_mm": 59.5,
+      "test_days": 1095,
+      "positive_rate": 0.0676,
+      "roc_auc": 0.781,
+      "roc_auc_recalibrated": 0.781,
+      "climatology_roc_auc": 0.71
+    },
+    {
+      "place": "dehradun",
+      "terrain": "hill",
+      "elevation_m": 651,
+      "slope_deg": 1.2,
+      "extreme_threshold_mm": 56.4,
+      "test_days": 1095,
+      "positive_rate": 0.0228,
+      "roc_auc": 0.889,
+      "roc_auc_recalibrated": 0.889,
+      "climatology_roc_auc": 0.855
+    },
+    {
+      "place": "mumbai",
+      "terrain": "coastal",
+      "elevation_m": 7,
+      "slope_deg": 0.8,
+      "extreme_threshold_mm": 66.7,
+      "test_days": 1095,
+      "positive_rate": 0.0356,
+      "roc_auc": 0.956,
+      "roc_auc_recalibrated": 0.956,
+      "climatology_roc_auc": 0.921
+    },
+    {
+      "place": "mangaluru",
+      "terrain": "coastal",
+      "elevation_m": 36,
+      "slope_deg": 3.0,
+      "extreme_threshold_mm": 58.0,
+      "test_days": 1095,
+      "positive_rate": 0.0447,
+      "roc_auc": 0.938,
+      "roc_auc_recalibrated": 0.938,
+      "climatology_roc_auc": 0.893
+    },
+    {
+      "place": "guwahati",
+      "terrain": "plains",
+      "elevation_m": 52,
+      "slope_deg": 0.4,
+      "extreme_threshold_mm": 70.9,
+      "test_days": 1095,
+      "positive_rate": 0.011,
+      "roc_auc": 0.854,
+      "roc_auc_recalibrated": 0.854,
+      "climatology_roc_auc": 0.858
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+# keep the image small: training-only tables, raw downloads, planning docs, caches
+.git
+.claude
+**/__pycache__
+**/.DS_Store
+*.zip
+ml/ef_features.csv
+ml/site_days.csv
+ml/test_ef.py
+datasourceSIH/external
+sihPlan
+sih_new

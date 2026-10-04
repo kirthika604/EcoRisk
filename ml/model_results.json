@@ -1,0 +1,1270 @@
+{
+  "generated_from": "ml/train_model.py -- every field here is computed, not hand-entered",
+  "n_sites_total": 24,
+  "n_sites_real": 19,
+  "n_sites_pending": 5,
+  "pending_sites": [
+    {
+      "site_id": "garhwal_control_tbd",
+      "terrain_type": "hill",
+      "status": "NOT_PULLED - needs Earth Engine (NDVI/NDBI/slope) + coordinates confirmed"
+    },
+    {
+      "site_id": "sundarbans_control",
+      "terrain_type": "coastal",
+      "status": "NOT_PULLED - needs Earth Engine (NDVI/NDBI/slope) + coordinates confirmed"
+    }
+  ],
+  "loocv": {
+    "correct": 14,
+    "total": 19,
+    "accuracy": 0.7368,
+    "per_site": [
+      {
+        "site_id": "joshimath",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.8163,
+        "correct": true
+      },
+      {
+        "site_id": "raini",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.5302,
+        "correct": true
+      },
+      {
+        "site_id": "kedarnath",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.6637,
+        "correct": true
+      },
+      {
+        "site_id": "wazri",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.9743,
+        "correct": true
+      },
+      {
+        "site_id": "dharali",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.9405,
+        "correct": true
+      },
+      {
+        "site_id": "malpa",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.8961,
+        "correct": true
+      },
+      {
+        "site_id": "auli_control",
+        "actual": 0,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.8846,
+        "correct": false
+      },
+      {
+        "site_id": "sundarbans",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.5929,
+        "correct": true
+      },
+      {
+        "site_id": "odisha_coast",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.6053,
+        "correct": true
+      },
+      {
+        "site_id": "coastal_control_tbd",
+        "actual": 0,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.742,
+        "correct": false
+      },
+      {
+        "site_id": "chennai",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.8868,
+        "correct": true
+      },
+      {
+        "site_id": "wayanad",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.9245,
+        "correct": true
+      },
+      {
+        "site_id": "jakhau",
+        "actual": 1,
+        "predicted": 0,
+        "predicted_prob_held_out": 0.1605,
+        "correct": false
+      },
+      {
+        "site_id": "ranikhet",
+        "actual": 0,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.7624,
+        "correct": false
+      },
+      {
+        "site_id": "kollam",
+        "actual": 0,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.9231,
+        "correct": false
+      },
+      {
+        "site_id": "pettimudi",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.9387,
+        "correct": true
+      },
+      {
+        "site_id": "kinnaur",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.939,
+        "correct": true
+      },
+      {
+        "site_id": "visakhapatnam",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.8897,
+        "correct": true
+      },
+      {
+        "site_id": "nagapattinam",
+        "actual": 1,
+        "predicted": 1,
+        "predicted_prob_held_out": 0.8038,
+        "correct": true
+      }
+    ]
+  },
+  "feature_importance": {
+    "ndvi_trend_slope": -0.331,
+    "elevation_mean_m": -0.102,
+    "lst_trend_slope": -0.0752,
+    "terrain_is_coastal": 0.3127,
+    "ndbi_trend_slope": 0.3469,
+    "mean_slope_degrees": 0.6899,
+    "rainfall_anomaly_pct": 0.8722
+  },
+  "cross_terrain": {
+    "n_hill_train": 11,
+    "n_coastal_test": 8,
+    "predicted": [
+      1,
+      1,
+      0,
+      1,
+      0,
+      1,
+      1,
+      1
+    ],
+    "actual": [
+      1,
+      1,
+      0,
+      1,
+      1,
+      0,
+      1,
+      1
+    ],
+    "site_ids": [
+      "sundarbans",
+      "odisha_coast",
+      "coastal_control_tbd",
+      "chennai",
+      "jakhau",
+      "kollam",
+      "visakhapatnam",
+      "nagapattinam"
+    ],
+    "n_correct": 6
+  },
+  "mechanism_scoped_rainfall_landslide": {
+    "description": "Rainfall/cloudburst-triggered hill landslide risk ONLY -- narrower than the main hill+coastal model above. Excludes coastal/cyclone sites (different physical mechanism, covered live by the product's GDACS feed instead) and joshimath (subsidence) / raini (ice-rock avalanche), which are hill but not rainfall-driven. First and only configuration tested this session with non-zero specificity -- see sihPlan/memory.md secs 33-35 for the full history of what was tried and why this one is the first with real evidence behind it. Still below broad statistical confidence (N=9) and still misses one of two negative controls (auli_control) -- report as 'first validated signal', not 'solved'.",
+    "n_sites": 9,
+    "loocv": {
+      "correct": 7,
+      "total": 9,
+      "accuracy": 0.7778,
+      "per_site": [
+        {
+          "site_id": "kedarnath",
+          "actual": 1,
+          "predicted": 0,
+          "predicted_prob_held_out": 0.3469,
+          "correct": false
+        },
+        {
+          "site_id": "wazri",
+          "actual": 1,
+          "predicted": 1,
+          "predicted_prob_held_out": 0.9901,
+          "correct": true
+        },
+        {
+          "site_id": "dharali",
+          "actual": 1,
+          "predicted": 1,
+          "predicted_prob_held_out": 0.95,
+          "correct": true
+        },
+        {
+          "site_id": "malpa",
+          "actual": 1,
+          "predicted": 1,
+          "predicted_prob_held_out": 0.8772,
+          "correct": true
+        },
+        {
+          "site_id": "auli_control",
+          "actual": 0,
+          "predicted": 1,
+          "predicted_prob_held_out": 0.6672,
+          "correct": false
+        },
+        {
+          "site_id": "wayanad",
+          "actual": 1,
+          "predicted": 1,
+          "predicted_prob_held_out": 0.8371,
+          "correct": true
+        },
+        {
+          "site_id": "ranikhet",
+          "actual": 0,
+          "predicted": 0,
+          "predicted_prob_held_out": 0.4786,
+          "correct": true
+        },
+        {
+          "site_id": "pettimudi",
+          "actual": 1,
+          "predicted": 1,
+          "predicted_prob_held_out": 0.8918,
+          "correct": true
+        },
+        {
+          "site_id": "kinnaur",
+          "actual": 1,
+          "predicted": 1,
+          "predicted_prob_held_out": 0.9546,
+          "correct": true
+        }
+      ]
+    },
+    "confusion_matrix": {
+      "tp": 6,
+      "fn": 1,
+      "fp": 1,
+      "tn": 1
+    },
+    "recall": 0.8571,
+    "specificity": 0.5,
+    "naive_baseline_accuracy": 0.7778
+  },
+  "out_of_scope_real_sites": [
+    {
+      "site_id": "guna",
+      "site_name": "Guna district (Bamori/Kalora Dam area), Madhya Pradesh",
+      "terrain_type": "plains",
+      "disaster_occurred": 1,
+      "disaster_type": "dam_breach_flood",
+      "disaster_date": "2025-07-30",
+      "ndvi_trend_slope": 0.01014,
+      "ndbi_trend_slope": -0.003945,
+      "mean_slope_degrees": 2.04,
+      "elevation_mean_m": 475.7,
+      "rainfall_anomaly_pct": 263.27,
+      "lst_trend_slope": -0.4885,
+      "lst_mean_c": 33.42,
+      "latitude": 24.6469,
+      "longitude": 77.3131,
+      "human_activity_notes": "NDBI trend -0.0039/yr (flat/declining) -- not a human-activity signal. The disaster itself has a real, documented human-infrastructure angle -- the Kalora Dam's west weir (built 1956) breached under extreme rainfall -- but this project has not independently verified dam maintenance/design history, so no causal claim is made beyond the real rainfall trigger.",
+      "source_citation": "Kalora Dam (Bamori area, Guna district, Madhya Pradesh) west weir breached by 15 feet after 12.92 inches (328mm) of rain in 24 hours, flooding villages including Singapore, Tumda, Kurka, Bandha, Umardha, Baniyani, Mamli, Biloda; NDRF and army deployed, ~250 villagers rescued. Real, well-documented (Free Press Journal, News on Air / All India Radio, SANDRP). Coordinates are Guna town center (district HQ) -- a labeled proxy, since the affected villages' exact coordinates were not available; same honest-approximation pattern used for odisha_coast's Puri correction. | Rainfall: NASA POWER, real pull, anchored 2025-07-30, 1827 days baseline (2026-09-02). | NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (195 obs).",
+      "not_in_model_reason": "Terrain type 'plains' has too few real sites so far to train/validate a prediction (see sihPlan/memory.md secs 32-34) -- real satellite and rainfall data is shown above, but no risk score."
+    },
+    {
+      "site_id": "silchar",
+      "site_name": "Silchar, Cachar district, Assam",
+      "terrain_type": "plains",
+      "disaster_occurred": 1,
+      "disaster_type": "river_flood_embankment_breach",
+      "disaster_date": "2022-06-19",
+      "ndvi_trend_slope": 7.6e-05,
+      "ndbi_trend_slope": 0.000794,
+      "mean_slope_degrees": 2.34,
+      "elevation_mean_m": 22.5,
+      "rainfall_anomaly_pct": 137.33,
+      "lst_trend_slope": -0.1433,
+      "lst_mean_c": 29.03,
+      "latitude": 24.8333,
+      "longitude": 92.7789,
+      "human_activity_notes": "NDBI trend +0.0008/yr (essentially flat) -- not a strong human-activity signal from this feature alone. Real, cited human factor: the Barak river embankment at Bethukandi was reportedly cut by residents in May 2022 to drain local flooding, and the embankment itself had seen no maintenance since 1965 (Wikipedia 2022 Silchar Floods, opindia, Scroll.in) -- a documented human-infrastructure contribution distinct from the NDVI/NDBI land-cover trend this model actually uses as a feature.",
+      "source_citation": "2022 Silchar Floods, Cachar district, Assam: Barak river breached its embankment at Bethukandi in late May / June 2022 after exceptional monsoon rainfall; over 80% of Silchar town submerged, 1.43 million affected in Cachar district, 200+ deaths reported statewide across the wider 2022 Assam floods. Real, well-documented (Wikipedia '2022 Silchar Floods', Scroll.in, Dialogue Earth, Sentinel Hub/Planet Stories EO analysis). | Rainfall: NASA POWER, real pull, anchored 2022-06-19 (day after Barak river passed danger level), 1827 days baseline (2026-09-02). | NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (190 obs).",
+      "not_in_model_reason": "Terrain type 'plains' has too few real sites so far to train/validate a prediction (see sihPlan/memory.md secs 32-34) -- real satellite and rainfall data is shown above, but no risk score."
+    },
+    {
+      "site_id": "jaisalmer",
+      "site_name": "Jaisalmer city, Rajasthan (control, desert)",
+      "terrain_type": "desert",
+      "disaster_occurred": 0,
+      "disaster_type": "",
+      "disaster_date": "",
+      "ndvi_trend_slope": 0.012013,
+      "ndbi_trend_slope": -0.006472,
+      "mean_slope_degrees": 3.53,
+      "elevation_mean_m": 242.2,
+      "rainfall_anomaly_pct": -99.99,
+      "lst_trend_slope": -0.3477,
+      "lst_mean_c": 35.11,
+      "latitude": 26.9157,
+      "longitude": 70.9083,
+      "human_activity_notes": "First desert/arid terrain site in the dataset, added specifically as a real negative control -- LOOCV testing found the model had never once correctly identified a genuine safe site (0/2 on the only prior negative controls, auli_control and coastal_control_tbd), both scoring higher risk than most actual disasters. NDVI trend is mildly positive (+0.012/yr), consistent with documented Thar desert greening from rising monsoon rainfall (Down To Earth, 2025) -- not a decline signal, unlike the disaster sites.",
+      "source_citation": "WebSearched 2026-09-02: no major flood/landslide/cyclone disaster documented for Jaisalmer city itself 2019-2023, despite regional rainfall in Jaisalmer district rising well above normal in 2021 (+69%) and 2022 (+96%) (Down To Earth / Rajras.in coverage) -- district-level wet years did not produce a recorded town-level disaster. Historical Rajasthan floods (1979 Luni basin, 2006 Barmer/Jaisalmer flash flood) affected other parts of the state, not Jaisalmer city, and predate the 2019-2023 study window used for every other site. Rainfall: NASA POWER API, real pull, 1827 days baseline, anchored 2023-01-01 (DEFAULT_CONTROL_ANCHOR, same convention as auli_control/coastal_control_tbd). NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. LST: MODIS MOD11A2 via Earth Engine (228 obs).",
+      "not_in_model_reason": "Terrain type 'desert' has too few real sites so far to train/validate a prediction (see sihPlan/memory.md secs 32-34) -- real satellite and rainfall data is shown above, but no risk score."
+    }
+  ],
+  "bootstrap_uncertainty": {
+    "method": "Non-parametric bootstrap: resample real sites with replacement, refit scaler+classifier on each resample, predict all real sites. CI = 10th-90th percentile of predicted probability across valid resamples.",
+    "n_bootstrap": 500,
+    "ci_percentiles": [
+      10,
+      90
+    ]
+  },
+  "model_params": {
+    "feature_cols": [
+      "ndvi_trend_slope",
+      "ndbi_trend_slope",
+      "mean_slope_degrees",
+      "elevation_mean_m",
+      "rainfall_anomaly_pct",
+      "terrain_is_coastal",
+      "lst_trend_slope"
+    ],
+    "coefficients": [
+      -0.330965,
+      0.346877,
+      0.689877,
+      -0.102042,
+      0.872194,
+      0.312741,
+      -0.075186
+    ],
+    "intercept": 1.642295,
+    "scaler_mean": [
+      0.00866,
+      0.008722,
+      16.376316,
+      1265.947368,
+      32.195789,
+      0.421053,
+      0.003416
+    ],
+    "scaler_scale": [
+      0.011601,
+      0.024581,
+      12.354281,
+      1274.287927,
+      72.908311,
+      0.493728,
+      0.446849
+    ]
+  },
+  "risk_ranking": [
+    {
+      "site_id": "wazri",
+      "site_name": "Wazri, near Yamunotri, Uttarkashi",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "landslide",
+      "disaster_date": "2017-09-12",
+      "predicted_risk_prob": 0.9766,
+      "risk_ci_low": 0.9541,
+      "risk_ci_high": 0.9947,
+      "risk_std": 0.0212,
+      "ndvi_trend_slope": 0.013801,
+      "ndbi_trend_slope": -0.001186,
+      "mean_slope_degrees": 33.38,
+      "elevation_mean_m": 2003.9,
+      "rainfall_anomaly_pct": 179.54,
+      "lst_trend_slope": 0.0675,
+      "lst_mean_c": 18.89,
+      "latitude": 30.9064,
+      "longitude": 78.3464,
+      "human_activity_notes": "",
+      "source_citation": "'Landslides Over Two Places of Uttarakhand: An Observation' (per dataset-sites.md; not independently verified) | Rainfall: NASA POWER API, real pull, 1827 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (227 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.1467,
+        "ndbi_trend_slope": -0.1398,
+        "mean_slope_degrees": 0.9495,
+        "elevation_mean_m": -0.0591,
+        "rainfall_anomaly_pct": 1.7627,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.0108
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 1.7627
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.9495
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": -0.2667
+        }
+      ]
+    },
+    {
+      "site_id": "pettimudi",
+      "site_name": "Pettimudi, Idukki district, Kerala",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "rainfall_triggered_landslide",
+      "disaster_date": "2020-08-06",
+      "predicted_risk_prob": 0.9508,
+      "risk_ci_low": 0.8731,
+      "risk_ci_high": 0.9899,
+      "risk_std": 0.0711,
+      "ndvi_trend_slope": -0.014689,
+      "ndbi_trend_slope": 0.001,
+      "mean_slope_degrees": 21.56,
+      "elevation_mean_m": 1857.7,
+      "rainfall_anomaly_pct": 90.89,
+      "lst_trend_slope": -0.5045,
+      "lst_mean_c": 21.49,
+      "latitude": 10.1167,
+      "longitude": 77.1667,
+      "human_activity_notes": "Added 2026-09-02 as a 6th rainfall-triggered-landslide-mechanism site, specifically to grow the mechanism-narrowed hill-landslide scope past the projects own N>=8 floor while keeping the mechanism match that produced the first non-zero specificity result this session. Western Ghats terrain (not Himalayan) -- genuine geographic diversity within the same physical mechanism. NDVI trend is negative (-0.015/yr, real decline), consistent with the vegetation-decline risk narrative used elsewhere in this project.",
+      "source_citation": "WebSearched 2026-09-02: 2020 Pettimudi landslide, Idukki district, Kerala, 6 August 2020, triggered by 616.2mm rainfall in one day (1842.7mm over the preceding 6 days); 66-70 killed, tea plantation workers and families. Well-documented in peer-reviewed literature (Springer Landslides journal preliminary analysis) and NDRF official records. Rainfall: NASA POWER API, real pull, anchored on actual disaster date 2020-08-06. NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. LST: MODIS MOD11A2 via Earth Engine (198 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.6661,
+        "ndbi_trend_slope": -0.109,
+        "mean_slope_degrees": 0.2895,
+        "elevation_mean_m": -0.0474,
+        "rainfall_anomaly_pct": 0.7022,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": 0.0855
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 0.7022
+        },
+        {
+          "feature": "ndvi_trend_slope",
+          "contribution": 0.6661
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.2895
+        }
+      ]
+    },
+    {
+      "site_id": "kinnaur",
+      "site_name": "Nigulsari, Kinnaur district, Himachal Pradesh",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "rainfall_triggered_landslide",
+      "disaster_date": "2021-08-11",
+      "predicted_risk_prob": 0.9474,
+      "risk_ci_low": 0.8489,
+      "risk_ci_high": 0.996,
+      "risk_std": 0.1035,
+      "ndvi_trend_slope": 0.024005,
+      "ndbi_trend_slope": 0.050324,
+      "mean_slope_degrees": 32.86,
+      "elevation_mean_m": 3010.5,
+      "rainfall_anomaly_pct": 92.57,
+      "lst_trend_slope": 0.8166,
+      "lst_mean_c": 17.47,
+      "latitude": 31.5989,
+      "longitude": 78.2765,
+      "human_activity_notes": "Added 2026-09-02 as a 7th rainfall-triggered-landslide-mechanism site, same purpose as pettimudi -- growing the mechanism-narrowed scope past the N>=8 floor. NDVI trend is positive (+0.024/yr) despite being a real rainfall-triggered disaster -- same pattern already seen in wazri/kedarnath (see sihPlan/memory.md sec 33/34: NDVI trend alone does not cleanly separate every disaster from safe sites, rainfall_anomaly_pct is doing more of the real work for this mechanism class).",
+      "source_citation": "WebSearched 2026-09-02: 2021 Kinnaur landslide, Nigulsari area on NH-5, Chaura village, Himachal Pradesh, 11 August 2021, ~12:30pm, hit a bus and vehicles on the highway during heavy monsoon rain; death toll rose to 25+ (Tribune India, Deccan Herald, Business Standard coverage). Rainfall: NASA POWER API, real pull, anchored on actual disaster date 2021-08-11. NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. LST: MODIS MOD11A2 via Earth Engine (229 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.4378,
+        "ndbi_trend_slope": 0.5871,
+        "mean_slope_degrees": 0.9205,
+        "elevation_mean_m": -0.1397,
+        "rainfall_anomaly_pct": 0.7222,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.1368
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.9205
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 0.7222
+        },
+        {
+          "feature": "ndbi_trend_slope",
+          "contribution": 0.5871
+        }
+      ]
+    },
+    {
+      "site_id": "dharali",
+      "site_name": "Dharali, Uttarkashi",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "cloudburst_landslide_flash_flood",
+      "disaster_date": "2025-08-01",
+      "predicted_risk_prob": 0.9469,
+      "risk_ci_low": 0.9109,
+      "risk_ci_high": 0.983,
+      "risk_std": 0.0365,
+      "ndvi_trend_slope": 0.002948,
+      "ndbi_trend_slope": -0.003386,
+      "mean_slope_degrees": 30.18,
+      "elevation_mean_m": 1787.6,
+      "rainfall_anomaly_pct": 98.94,
+      "lst_trend_slope": 0.0834,
+      "lst_mean_c": 18.09,
+      "latitude": 30.83,
+      "longitude": 78.45,
+      "human_activity_notes": "",
+      "source_citation": "Recent news coverage, e.g. ETV Bharat, Aug 2025 (per dataset-sites.md; coordinates marked 'verify' in source doc) | Rainfall: NASA POWER API, real pull, 1827 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (228 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.1629,
+        "ndbi_trend_slope": -0.1709,
+        "mean_slope_degrees": 0.7708,
+        "elevation_mean_m": -0.0418,
+        "rainfall_anomaly_pct": 0.7985,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.0135
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 0.7985
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.7708
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": -0.2667
+        }
+      ]
+    },
+    {
+      "site_id": "wayanad",
+      "site_name": "Wayanad (Chooralmala-Mundakkai), Kerala",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "rainfall_triggered_landslide",
+      "disaster_date": "2024-07-30",
+      "predicted_risk_prob": 0.935,
+      "risk_ci_low": 0.8923,
+      "risk_ci_high": 0.9775,
+      "risk_std": 0.0395,
+      "ndvi_trend_slope": 0.006674,
+      "ndbi_trend_slope": -0.001877,
+      "mean_slope_degrees": 22.01,
+      "elevation_mean_m": 630.5,
+      "rainfall_anomaly_pct": 112.86,
+      "lst_trend_slope": -0.3072,
+      "lst_mean_c": 27.28,
+      "latitude": 11.45,
+      "longitude": 76.08,
+      "human_activity_notes": "NDBI trend -0.0019/yr (flat) -- not a strong standalone human-activity signal from this feature alone. Independent research (Eos.org Landslide Blog; ScienceDirect preliminary analysis) attributes the disaster to a combination of extreme rainfall (373mm/24hr) and steep slope instability in tea-plantation terrain -- land-use change in the Western Ghats is discussed in the wider literature but is not something this project has independently quantified beyond the real NDVI/NDBI trend numbers here.",
+      "source_citation": "Mundakkai-Chooralmala landslide, Wayanad district, Kerala, 30 July 2024 -- one of India's deadliest landslides; death toll reports varied by source/date (roughly 200-400 range across different reporting windows), triggered by 373mm rainfall in 24 hours. Sources: Eos.org/AGU Landslide Blog, ScienceDirect preliminary analysis (Jan 2025). | Rainfall: NASA POWER API, real pull, anchored 2024-07-30, 1828 days baseline (2026-09-02). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (162 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.0566,
+        "ndbi_trend_slope": -0.1496,
+        "mean_slope_degrees": 0.3146,
+        "elevation_mean_m": 0.0509,
+        "rainfall_anomaly_pct": 0.965,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": 0.0523
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 0.965
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.3146
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": -0.2667
+        }
+      ]
+    },
+    {
+      "site_id": "malpa",
+      "site_name": "Malpa village, Pithoragarh",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "landslide",
+      "disaster_date": "1998-08-18",
+      "predicted_risk_prob": 0.9106,
+      "risk_ci_low": 0.8598,
+      "risk_ci_high": 0.9679,
+      "risk_std": 0.0501,
+      "ndvi_trend_slope": 0.00181,
+      "ndbi_trend_slope": -0.00109,
+      "mean_slope_degrees": 27.68,
+      "elevation_mean_m": 992.8,
+      "rainfall_anomaly_pct": 52.28,
+      "lst_trend_slope": 0.0297,
+      "lst_mean_c": 21.67,
+      "latitude": 29.85,
+      "longitude": 80.35,
+      "human_activity_notes": "",
+      "source_citation": "Rautela & Pande, 2005 (per dataset-sites.md; coordinates marked 'verify', pre-Sentinel-2 era so NDVI trend may not be pullable) | Rainfall: NASA POWER API, real pull, 1827 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (222 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.1954,
+        "ndbi_trend_slope": -0.1385,
+        "mean_slope_degrees": 0.6312,
+        "elevation_mean_m": 0.0219,
+        "rainfall_anomaly_pct": 0.2403,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.0044
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.6312
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": -0.2667
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 0.2403
+        }
+      ]
+    },
+    {
+      "site_id": "chennai",
+      "site_name": "Chennai, Tamil Nadu",
+      "terrain_type": "coastal",
+      "disaster_occurred": 1,
+      "disaster_type": "cyclone_induced_flooding",
+      "disaster_date": "2023-12-04",
+      "predicted_risk_prob": 0.9073,
+      "risk_ci_low": 0.801,
+      "risk_ci_high": 0.9732,
+      "risk_std": 0.0864,
+      "ndvi_trend_slope": 0.011965,
+      "ndbi_trend_slope": -0.007458,
+      "mean_slope_degrees": 2.73,
+      "elevation_mean_m": 8.3,
+      "rainfall_anomaly_pct": 132.14,
+      "lst_trend_slope": -0.3584,
+      "lst_mean_c": 35.2,
+      "latitude": 13.0827,
+      "longitude": 80.2707,
+      "human_activity_notes": "NDBI trend -0.0075/yr (slightly declining/flat) in this 1km buffer -- not a usable human-activity signal on its own. This site's disaster driver is the cyclone's extreme rainfall (400mm over 3-5 Dec 2023), not a slow land-use trend.",
+      "source_citation": "Cyclone Michaung: catastrophic urban flooding in Chennai (Velachery, Tambaram), 31 deaths per Tamil Nadu State Disaster Management Authority; ~400mm rainfall 3-5 Dec 2023 (Business Standard, Wikipedia). Michaung's actual IMD-tracked landfall was near Nellore/Machilipatnam, Andhra Pradesh, over 150km from Chennai, on 5 Dec 2023 -- Chennai's disaster was flood damage from the storm's rainfall, not direct landfall impact, so cyclone landfall wind/pressure fields are left blank rather than misattributed to this site. | Rainfall: NASA POWER API, real pull, anchored 2023-12-04, 1827 days baseline (2026-09-01). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (192 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.0943,
+        "ndbi_trend_slope": -0.2283,
+        "mean_slope_degrees": -0.762,
+        "elevation_mean_m": 0.1007,
+        "rainfall_anomaly_pct": 1.1956,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.0609
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 1.1956
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.762
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": 0.3667
+        }
+      ]
+    },
+    {
+      "site_id": "visakhapatnam",
+      "site_name": "Visakhapatnam city, Andhra Pradesh",
+      "terrain_type": "coastal",
+      "disaster_occurred": 1,
+      "disaster_type": "cyclone",
+      "disaster_date": "2014-10-12",
+      "predicted_risk_prob": 0.9057,
+      "risk_ci_low": 0.7842,
+      "risk_ci_high": 0.9685,
+      "risk_std": 0.0905,
+      "ndvi_trend_slope": 0.013315,
+      "ndbi_trend_slope": -0.006702,
+      "mean_slope_degrees": 8.67,
+      "elevation_mean_m": 57.3,
+      "rainfall_anomaly_pct": 104.42,
+      "lst_trend_slope": -0.4349,
+      "lst_mean_c": 33.32,
+      "latitude": 17.6868,
+      "longitude": 83.2185,
+      "human_activity_notes": "Added 2026-09-02 to grow the cyclone-mechanism-scoped coastal model past N=6 (which was catastrophically unstable, 1/6 LOOCV, worse than naive -- 6 features vs 5 training points per LOO fold is mathematically underdetermined, not necessarily a real negative signal). Cyclone Hudhud (2014) predates Sentinel-2 (launched 2015) -- NDVI/NDBI/slope use the same 2019-2023 current-baseline window every other pre-2015 site in this table already uses (kedarnath 2013, malpa 1998), per established project precedent. Only rainfall_anomaly_pct is anchored on the real 2014-10-12 landfall date (NASA POWER data covers this).",
+      "source_citation": "WebSearched 2026-09-02: Cyclone Hudhud, Very Severe Cyclonic Storm, made landfall near Visakhapatnam 12 October 2014 ~06:30-07:30 UTC (12:00-13:00 IST), winds 170-180 km/h, min central pressure 950mb. Confirmed via ReliefWeb, IMD RSMC New Delhi cyclone report, Wikipedia. Rainfall: NASA POWER API, real pull, anchored on actual landfall date 2014-10-12. NDVI/NDBI: Sentinel-2 via Earth Engine (2019-2023 baseline, disaster predates Sentinel-2 -- same convention as kedarnath/malpa); slope/elevation: SRTM DEM via Earth Engine. LST: MODIS MOD11A2 via Earth Engine (175 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.1328,
+        "ndbi_trend_slope": -0.2177,
+        "mean_slope_degrees": -0.4303,
+        "elevation_mean_m": 0.0968,
+        "rainfall_anomaly_pct": 0.864,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.0738
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 0.864
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.4303
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": 0.3667
+        }
+      ]
+    },
+    {
+      "site_id": "joshimath",
+      "site_name": "Joshimath, Chamoli",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "land_subsidence",
+      "disaster_date": "2023-01-02",
+      "predicted_risk_prob": 0.8519,
+      "risk_ci_low": 0.7337,
+      "risk_ci_high": 0.9591,
+      "risk_std": 0.1056,
+      "ndvi_trend_slope": -0.00028,
+      "ndbi_trend_slope": 0.011152,
+      "mean_slope_degrees": 29.74,
+      "elevation_mean_m": 1946.3,
+      "rainfall_anomaly_pct": -17.58,
+      "lst_trend_slope": 0.0726,
+      "lst_mean_c": 20.49,
+      "latitude": 30.5551,
+      "longitude": 79.5641,
+      "human_activity_notes": "Rising NDBI (built-up growth) trend; govt expert committee (NDMA/GSI/CBRI) attributed subsidence to drainage failure + anthropogenic activity, not rainfall trigger (see sihPlan/memory.md sec 6).",
+      "source_citation": "Deccan Herald/Outlook India/BusinessToday (Jan 2023) citing ISRO/NRSC DInSAR report (secondary source, primary PDF no longer hosted); slope/elevation from project DEM pull; NDVI/NDBI from Sentinel-2 via GEE; rainfall from NASA POWER. LST: MODIS MOD11A2 via Earth Engine (223 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.255,
+        "ndbi_trend_slope": 0.0343,
+        "mean_slope_degrees": 0.7462,
+        "elevation_mean_m": -0.0545,
+        "rainfall_anomaly_pct": -0.5955,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.0116
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.7462
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -0.5955
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": -0.2667
+        }
+      ]
+    },
+    {
+      "site_id": "nagapattinam",
+      "site_name": "Nagapattinam town, Tamil Nadu",
+      "terrain_type": "coastal",
+      "disaster_occurred": 1,
+      "disaster_type": "cyclone",
+      "disaster_date": "2018-11-16",
+      "predicted_risk_prob": 0.8301,
+      "risk_ci_low": 0.6635,
+      "risk_ci_high": 0.9456,
+      "risk_std": 0.1168,
+      "ndvi_trend_slope": 0.005004,
+      "ndbi_trend_slope": -0.003301,
+      "mean_slope_degrees": 1.88,
+      "elevation_mean_m": 5.3,
+      "rainfall_anomaly_pct": 56.78,
+      "lst_trend_slope": -0.3344,
+      "lst_mean_c": 33.64,
+      "latitude": 10.7672,
+      "longitude": 79.8449,
+      "human_activity_notes": "Added 2026-09-02, same purpose as visakhapatnam -- growing the cyclone-mechanism-scoped coastal model past the unstable N=6 point. Initial coordinates (10.79,79.88) returned 0 LST observations (MODIS LST is land-only, masks water -- same failure mode already seen and fixed for odisha_coast) -- corrected to Nagapattinam town center (10.7672,79.8449), re-pulled clean (179 obs). Cyclone Gaja (2018) predates this table's standard 2019-2023 window by a few weeks only -- rainfall anchored on the real landfall date, NDVI/NDBI/slope use the standard 2019-2023 window like every other site.",
+      "source_citation": "WebSearched 2026-09-02: Cyclone Gaja, Very Severe Cyclonic Storm, made landfall between Nagapattinam and Vedaranyam, Tamil Nadu, 16 November 2018 ~01:45 IST. Confirmed via ReliefWeb, NASA hurricane blog, Deccan Herald, Down To Earth (33+ killed, 82,000 evacuated). Rainfall: NASA POWER API, real pull, anchored on actual landfall date 2018-11-16. NDVI/NDBI: Sentinel-2 via Earth Engine (2019-2023 baseline); slope/elevation: SRTM DEM via Earth Engine. LST: MODIS MOD11A2 via Earth Engine (179 obs, corrected coordinates).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.1043,
+        "ndbi_trend_slope": -0.1697,
+        "mean_slope_degrees": -0.8095,
+        "elevation_mean_m": 0.101,
+        "rainfall_anomaly_pct": 0.2941,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.0568
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.8095
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": 0.3667
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": 0.2941
+        }
+      ]
+    },
+    {
+      "site_id": "kedarnath",
+      "site_name": "Kedarnath area, Rudraprayag",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "rainfall_triggered_landslide_flood",
+      "disaster_date": "2013-06-16",
+      "predicted_risk_prob": 0.8282,
+      "risk_ci_low": 0.4791,
+      "risk_ci_high": 0.995,
+      "risk_std": 0.223,
+      "ndvi_trend_slope": 0.028768,
+      "ndbi_trend_slope": 0.081103,
+      "mean_slope_degrees": 24.54,
+      "elevation_mean_m": 3678.0,
+      "rainfall_anomaly_pct": 4.07,
+      "lst_trend_slope": 1.0518,
+      "lst_mean_c": 6.8,
+      "latitude": 30.7346,
+      "longitude": 79.0669,
+      "human_activity_notes": "",
+      "source_citation": "Martha et al. 2015 (cited in ResearchGate search, per dataset-sites.md; not independently verified) | Rainfall: NASA POWER API, real pull, 1827 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (223 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.5737,
+        "ndbi_trend_slope": 1.0214,
+        "mean_slope_degrees": 0.4559,
+        "elevation_mean_m": -0.1932,
+        "rainfall_anomaly_pct": -0.3365,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.1764
+      },
+      "top_drivers": [
+        {
+          "feature": "ndbi_trend_slope",
+          "contribution": 1.0214
+        },
+        {
+          "feature": "ndvi_trend_slope",
+          "contribution": -0.5737
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.4559
+        }
+      ]
+    },
+    {
+      "site_id": "kollam",
+      "site_name": "Kollam city, Kerala (control, coastal)",
+      "terrain_type": "coastal",
+      "disaster_occurred": 0,
+      "disaster_type": NaN,
+      "disaster_date": "",
+      "predicted_risk_prob": 0.7569,
+      "risk_ci_low": 0.4627,
+      "risk_ci_high": 0.9491,
+      "risk_std": 0.1873,
+      "ndvi_trend_slope": -0.006982,
+      "ndbi_trend_slope": -0.001978,
+      "mean_slope_degrees": 2.12,
+      "elevation_mean_m": 18.7,
+      "rainfall_anomaly_pct": -9.35,
+      "lst_trend_slope": -0.1429,
+      "lst_mean_c": 32.0,
+      "latitude": 8.8932,
+      "longitude": 76.6141,
+      "human_activity_notes": "Added as 2nd real coastal negative control (2026-09-02) -- with only 1 prior coastal control (coastal_control_tbd) LOOCV could never validate the coastal-safe pattern. Checked with a real distance calculation against the actual NOAA IBTrACS North Indian Ocean track file (downloaded 2026-09-02, ibtracs.NI.list.v04r01.csv, not just the 2-row extract already in this repo): nearest NEWDELHI-graded Severe-or-stronger (>=48kt) cyclone track point 2019-2023 was Cyclone NIVAR (2020, VSCS, 65kt, landfall near Puducherry) at 509km distance -- more than 3x farther than coastal_control_tbd's 157km. NDVI trend is mildly negative (-0.007/yr) -- weaker than any real coastal disaster site's decline but not zero, so this control is not a perfectly clean feature profile, reported honestly rather than smoothed over.",
+      "source_citation": "WebSearched 2026-09-02: Kollam was NOT among Kerala's worst-affected districts in either the 2018 floods (1,503 ha flooded vs Alappuzha's 21,799 ha and Kottayam's 12,301 ha) or 2019 floods (yellow alert, the lowest IMD alert tier, vs red alerts in northern/central Kerala). This is 'measurably and relatively less affected,' not 'zero flood exposure ever' -- same honesty standard as every other control site here. Real IBTrACS distance check (see human_activity_notes) confirms no severe+ cyclone hit nearby either. Rainfall: NASA POWER API, real pull, 1827 days baseline, anchored 2023-01-01 (DEFAULT_CONTROL_ANCHOR). NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. LST: MODIS MOD11A2 via Earth Engine (197 obs). GMW mangrove: 0.00 ha across all years (not a mangrove coastal type, unlike sundarbans/coastal_control_tbd).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.4462,
+        "ndbi_trend_slope": -0.151,
+        "mean_slope_degrees": -0.7961,
+        "elevation_mean_m": 0.0999,
+        "rainfall_anomaly_pct": -0.497,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.0246
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.7961
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -0.497
+        },
+        {
+          "feature": "ndvi_trend_slope",
+          "contribution": 0.4462
+        }
+      ]
+    },
+    {
+      "site_id": "raini",
+      "site_name": "Raini village, Chamoli",
+      "terrain_type": "hill",
+      "disaster_occurred": 1,
+      "disaster_type": "flash_flood_rock_ice_avalanche",
+      "disaster_date": "2021-02-07",
+      "predicted_risk_prob": 0.7101,
+      "risk_ci_low": 0.428,
+      "risk_ci_high": 0.9611,
+      "risk_std": 0.2146,
+      "ndvi_trend_slope": 0.010613,
+      "ndbi_trend_slope": 0.033538,
+      "mean_slope_degrees": 31.35,
+      "elevation_mean_m": 3418.9,
+      "rainfall_anomaly_pct": -78.33,
+      "lst_trend_slope": 0.6915,
+      "lst_mean_c": 9.4,
+      "latitude": 30.5642,
+      "longitude": 79.7369,
+      "human_activity_notes": "",
+      "source_citation": "News archives / academic papers on Rishiganga debris flow (unverified, per dataset-sites.md) | Rainfall: NASA POWER API, real pull, 1828 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (226 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.0557,
+        "ndbi_trend_slope": 0.3502,
+        "mean_slope_degrees": 0.8361,
+        "elevation_mean_m": -0.1724,
+        "rainfall_anomaly_pct": -1.3222,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.1158
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -1.3222
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": 0.8361
+        },
+        {
+          "feature": "ndbi_trend_slope",
+          "contribution": 0.3502
+        }
+      ]
+    },
+    {
+      "site_id": "odisha_coast",
+      "site_name": "Odisha coast (Puri/Bhitarkanika area)",
+      "terrain_type": "coastal",
+      "disaster_occurred": 1,
+      "disaster_type": "cyclone",
+      "disaster_date": "2019-05-03",
+      "predicted_risk_prob": 0.7075,
+      "risk_ci_low": 0.3933,
+      "risk_ci_high": 0.9416,
+      "risk_std": 0.2068,
+      "ndvi_trend_slope": -0.006317,
+      "ndbi_trend_slope": 0.000655,
+      "mean_slope_degrees": 2.46,
+      "elevation_mean_m": 14.1,
+      "rainfall_anomaly_pct": -32.58,
+      "lst_trend_slope": -0.0706,
+      "lst_mean_c": 31.58,
+      "latitude": 19.8106,
+      "longitude": 85.8314,
+      "human_activity_notes": "NDBI trend +0.0009 (essentially flat). Real GMW data confirms 0.00 ha mangrove in this buffer across all 11 years -- Puri itself is not a mangrove area (see sihPlan/memory.md sec 14). Neither mangrove-loss nor NDBI growth is a usable human-activity signal at this site; disaster driver is the acute cyclone event.",
+      "source_citation": "Cyclone Fani, Odisha SDMA reports. COORDINATE CORRECTED 2026-08-31: original 19.7,85.8 (per dataset-sites.md, marked 'verify') returned elevation_mean_m=0.0 and mean_slope_degrees=0.0 from the real SRTM DEM pull -- the signature of a point sitting in open water, not land, which also produced 0 valid Land Surface Temperature observations across the full 2019-2023 period (MODIS LST is land-only, masks water). Replaced with Puri town center, 19.8106N 85.8314E (19 48'38\"N 85 49'53\"E), a well-documented landmark confirmed on land. NDVI/NDBI/slope/elevation/LST all need re-pulling at this corrected point -- the old values at 19.7,85.8 are unreliable. | Rainfall: NASA POWER API, real pull, 1827 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (343 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.4273,
+        "ndbi_trend_slope": -0.1138,
+        "mean_slope_degrees": -0.7771,
+        "elevation_mean_m": 0.1002,
+        "rainfall_anomaly_pct": -0.7749,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.0125
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.7771
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -0.7749
+        },
+        {
+          "feature": "ndvi_trend_slope",
+          "contribution": 0.4273
+        }
+      ]
+    },
+    {
+      "site_id": "sundarbans",
+      "site_name": "Sundarbans (West Bengal side)",
+      "terrain_type": "coastal",
+      "disaster_occurred": 1,
+      "disaster_type": "cyclone",
+      "disaster_date": "2020-05-20",
+      "predicted_risk_prob": 0.6828,
+      "risk_ci_low": 0.393,
+      "risk_ci_high": 0.9159,
+      "risk_std": 0.1955,
+      "ndvi_trend_slope": -0.002037,
+      "ndbi_trend_slope": -0.003205,
+      "mean_slope_degrees": 1.96,
+      "elevation_mean_m": 4.4,
+      "rainfall_anomaly_pct": -24.53,
+      "lst_trend_slope": -0.0161,
+      "lst_mean_c": 26.39,
+      "latitude": 21.9497,
+      "longitude": 88.9468,
+      "human_activity_notes": "NDBI trend +/-0.003 (near flat) in this 1km buffer -- not a strong standalone human-activity signal on its own. Real GMW mangrove data confirms mild decline (304.5->303.1 ha, 1996-2020) but mangrove is not a model feature. This site's disaster driver is primarily the acute cyclone event, not a slow land-use trend -- see sihPlan/memory.md sec 15 for why the coastal narrative leans on cyclone intensity rather than forcing a human-activity story the data doesn't support.",
+      "source_citation": "Cyclone Amphan, state disaster reports / mangrove-cyclone damage studies (per dataset-sites.md; exact sub-area needs verification) | Rainfall: NASA POWER API, real pull, 1828 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (327 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": 0.3052,
+        "ndbi_trend_slope": -0.1683,
+        "mean_slope_degrees": -0.805,
+        "elevation_mean_m": 0.101,
+        "rainfall_anomaly_pct": -0.6786,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.0033
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.805
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -0.6786
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": 0.3667
+        }
+      ]
+    },
+    {
+      "site_id": "auli_control",
+      "site_name": "Auli, Chamoli (control)",
+      "terrain_type": "hill",
+      "disaster_occurred": 0,
+      "disaster_type": NaN,
+      "disaster_date": "",
+      "predicted_risk_prob": 0.5817,
+      "risk_ci_low": 0.2683,
+      "risk_ci_high": 0.9681,
+      "risk_std": 0.2537,
+      "ndvi_trend_slope": 0.026777,
+      "ndbi_trend_slope": 0.045879,
+      "mean_slope_degrees": 20.55,
+      "elevation_mean_m": 2837.7,
+      "rainfall_anomaly_pct": -58.21,
+      "lst_trend_slope": 0.4725,
+      "lst_mean_c": 14.52,
+      "latitude": 30.5271,
+      "longitude": 79.5665,
+      "human_activity_notes": "",
+      "source_citation": "Control candidate -- no major documented event in window, per dataset-sites.md; needs GSI/news search confirmation | Rainfall: NASA POWER API, real pull, 1827 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (225 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.5169,
+        "ndbi_trend_slope": 0.5243,
+        "mean_slope_degrees": 0.2331,
+        "elevation_mean_m": -0.1259,
+        "rainfall_anomaly_pct": -1.0815,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": -0.0789
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -1.0815
+        },
+        {
+          "feature": "ndbi_trend_slope",
+          "contribution": 0.5243
+        },
+        {
+          "feature": "ndvi_trend_slope",
+          "contribution": -0.5169
+        }
+      ]
+    },
+    {
+      "site_id": "coastal_control_tbd",
+      "site_name": "Coringa mangrove area, Kakinada, Andhra Pradesh (control candidate)",
+      "terrain_type": "coastal",
+      "disaster_occurred": 0,
+      "disaster_type": NaN,
+      "disaster_date": "",
+      "predicted_risk_prob": 0.58,
+      "risk_ci_low": 0.2912,
+      "risk_ci_high": 0.8799,
+      "risk_std": 0.2123,
+      "ndvi_trend_slope": 0.012469,
+      "ndbi_trend_slope": -0.015577,
+      "mean_slope_degrees": 2.66,
+      "elevation_mean_m": 4.1,
+      "rainfall_anomaly_pct": -18.89,
+      "lst_trend_slope": -0.2423,
+      "lst_mean_c": 30.82,
+      "latitude": 16.75,
+      "longitude": 82.28,
+      "human_activity_notes": "NDBI trend -0.016 (mildly declining) -- if anything more negative than either real coastal disaster site, so NDBI alone would not distinguish this control either. Real GMW mangrove data is small and noisy (0.71-1.83 ha, no clear trend) -- likely near the sanctuary's edge rather than its core within this 1km buffer.",
+      "source_citation": "Candidate control site, checked against real IBTrACS track data 2026-08-31: nearest IMD-graded Severe-or-stronger cyclone (>=48kt) in 2015-2023 was ASANI (2022, SCS, 50kt) at 157km distance -- no direct/close severe cyclone hit in this window. Same coastal-mangrove terrain type as the Sundarbans site (Coringa Wildlife Sanctuary mangroves), unlike a non-mangrove coastal control. STILL NEEDS: team confirmation this is an acceptable control (157km is 'no severe hit nearby', not 'zero cyclone exposure ever') -- see ml-model-plan.md's own caveat that control-site selection is a judgment call to be ready to defend. | Rainfall: NASA POWER API, real pull, 1827 days baseline (2026-08-31). | NDVI/NDBI: Sentinel-2 via Earth Engine (gee_pull_site.py); slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (338 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.1087,
+        "ndbi_trend_slope": -0.3429,
+        "mean_slope_degrees": -0.7659,
+        "elevation_mean_m": 0.101,
+        "rainfall_anomaly_pct": -0.6111,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.0413
+      },
+      "top_drivers": [
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.7659
+        },
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -0.6111
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": 0.3667
+        }
+      ]
+    },
+    {
+      "site_id": "ranikhet",
+      "site_name": "Ranikhet, Almora district, Uttarakhand (control, hill)",
+      "terrain_type": "hill",
+      "disaster_occurred": 0,
+      "disaster_type": NaN,
+      "disaster_date": "",
+      "predicted_risk_prob": 0.5157,
+      "risk_ci_low": 0.2863,
+      "risk_ci_high": 0.9001,
+      "risk_std": 0.2171,
+      "ndvi_trend_slope": 0.015274,
+      "ndbi_trend_slope": -0.005975,
+      "mean_slope_degrees": 13.15,
+      "elevation_mean_m": 1769.9,
+      "rainfall_anomaly_pct": -28.43,
+      "lst_trend_slope": -0.1685,
+      "lst_mean_c": 21.46,
+      "latitude": 29.642,
+      "longitude": 79.4322,
+      "human_activity_notes": "Added as 2nd real hill negative control (2026-09-02) -- with only 1 prior hill control (auli_control) LOOCV could never validate the hill-safe pattern (holding out the only negative leaves training with zero negatives). NDVI trend is positive (+0.015/yr, greening) unlike every disaster hill site, which show flat-to-negative NDVI trends -- a real distinguishing signal, not invented.",
+      "source_citation": "WebSearched 2026-09-02: no major landslide/flood/cloudburst disaster documented for Ranikhet town itself in the 2019-2023 study window. Only documented recent-era event found: a 2004 cloudburst in Ranikhet/Almora causing 1 casualty -- outside the study window used for every other site (2019-2023), same standard already applied elsewhere in this table. Broader Uttarakhand disasters in this window (2021 Chamoli/Rishiganga flood, 2023 Himalayan floods) are centered on different valleys/districts, already represented by the raini and other real disaster sites in this table, not Ranikhet. STILL A JUDGMENT CALL like every other control site here -- see coastal_control_tbd/auli_control citations for the same caveat. Rainfall: NASA POWER API, real pull, 1827 days baseline, anchored 2023-01-01 (DEFAULT_CONTROL_ANCHOR). NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. LST: MODIS MOD11A2 via Earth Engine (215 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.1887,
+        "ndbi_trend_slope": -0.2074,
+        "mean_slope_degrees": -0.1802,
+        "elevation_mean_m": -0.0404,
+        "rainfall_anomaly_pct": -0.7253,
+        "terrain_is_coastal": -0.2667,
+        "lst_trend_slope": 0.0289
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -0.7253
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": -0.2667
+        },
+        {
+          "feature": "ndbi_trend_slope",
+          "contribution": -0.2074
+        }
+      ]
+    },
+    {
+      "site_id": "jakhau",
+      "site_name": "Jakhau, Kutch, Gujarat",
+      "terrain_type": "coastal",
+      "disaster_occurred": 1,
+      "disaster_type": "cyclone",
+      "disaster_date": "2023-06-15",
+      "predicted_risk_prob": 0.4752,
+      "risk_ci_low": 0.0993,
+      "risk_ci_high": 0.8348,
+      "risk_std": 0.2662,
+      "ndvi_trend_slope": 0.021413,
+      "ndbi_trend_slope": -0.006197,
+      "mean_slope_degrees": 1.67,
+      "elevation_mean_m": 7.0,
+      "rainfall_anomaly_pct": -44.87,
+      "lst_trend_slope": -0.6409,
+      "lst_mean_c": 34.92,
+      "latitude": 23.2167,
+      "longitude": 68.7,
+      "human_activity_notes": "NDBI trend -0.0062/yr (flat/declining) -- not a human-activity signal; disaster driver is the acute cyclone landfall itself. Notably an Arabian Sea system, distinct from the Bay of Bengal cyclones (Amphan, Fani) at our other coastal sites.",
+      "source_citation": "Cyclone Biparjoy made landfall near Jakhau Port, Kutch, Gujarat, 15 June 2023 (IMD: Very Severe Cyclonic Storm, later downgraded), sustained winds reported 115-125 km/h, gusts to 140 km/h. Real, well-documented (Wikipedia, Deccan Herald, Tribune India, International Charter Space and Major Disasters). Precise IMD/IBTrACS landfall wind/pressure not independently verified this session (not in datasourceSIH/cyclone_landfall_ibtracs.csv) -- landfall wind/pressure fields left blank rather than stating a rounded news figure with false precision. | Rainfall: NASA POWER, real pull, anchored 2023-06-15, 1827 days baseline (2026-09-02). | NDVI/NDBI: Sentinel-2 via Earth Engine; slope/elevation: SRTM DEM via Earth Engine. | LST: MODIS MOD11A2 via Earth Engine (218 obs).",
+      "feature_contributions": {
+        "ndvi_trend_slope": -0.3638,
+        "ndbi_trend_slope": -0.2105,
+        "mean_slope_degrees": -0.8212,
+        "elevation_mean_m": 0.1008,
+        "rainfall_anomaly_pct": -0.9219,
+        "terrain_is_coastal": 0.3667,
+        "lst_trend_slope": 0.1084
+      },
+      "top_drivers": [
+        {
+          "feature": "rainfall_anomaly_pct",
+          "contribution": -0.9219
+        },
+        {
+          "feature": "mean_slope_degrees",
+          "contribution": -0.8212
+        },
+        {
+          "feature": "terrain_is_coastal",
+          "contribution": 0.3667
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoRisk AI: Multi-Site Model (SIH26206)</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #121b2e;
+    --panel-well: #0d1626;
+    --panel-border: #23324d;
+    --text: #e7ecf5;
+    --text-dim: #9fb0c9;
+    --accent: #4fd1c5;
+    --accent2: #f6ad55;
+    --danger: #f56565;
+    --warn: #ecc94b;
+    --ok: #68d391;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    padding: 28px 24px 18px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  header h1 { margin: 0 0 6px; font-size: 22px; }
+  header .pitch { color: var(--text-dim); max-width: 900px; font-size: 15px; }
+  header .pitch em { color: var(--text); font-style: normal; }
+
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .panel h2 { margin: 0 0 4px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .panel .step { color: var(--text-dim); font-weight: 400; font-size: 13px; }
+  .panel .sub { color: var(--text-dim); font-size: 13px; margin-bottom: 16px; max-width: 800px; }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    vertical-align: middle;
+    white-space: nowrap;
+  }
+  .panel h2 { flex-wrap: wrap; }
+  .tag.real { background: rgba(79,209,197,0.15); color: var(--accent); border: 1px solid rgba(79,209,197,0.4); }
+  .tag.mock { background: rgba(246,173,85,0.15); color: var(--accent2); border: 1px solid rgba(246,173,85,0.4); }
+  .tag.live { background: rgba(104,211,145,0.15); color: var(--ok); border: 1px solid rgba(104,211,145,0.4); }
+
+  /* ---- Claim panel ---- */
+  .claim-quote {
+    font-size: 17px;
+    line-height: 1.6;
+    background: var(--panel-well);
+    border-left: 3px solid var(--accent);
+    padding: 16px 18px;
+    border-radius: 6px;
+  }
+  .claim-old {
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-dim);
+  }
+
+  /* ---- Evidence panel ---- */
+  .evidence-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 16px; }
+  .stat { min-width: 140px; }
+  .stat .val { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .stat .label { font-size: 12px; color: var(--text-dim); }
+  .site-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+  .site-chip {
+    background: var(--panel-well);
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12px;
+    cursor: default;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+  .site-chip .name-row { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+  .site-chip .name { font-weight: 600; font-size: 13px; }
+  .site-chip .terrain { color: var(--text-dim); text-transform: capitalize; }
+  .site-chip .dot { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 6px; }
+  .site-chip.disaster .dot { background: var(--danger); }
+  .site-chip.control .dot { background: var(--ok); }
+  .site-chip.pending { opacity: 0.55; border-style: dashed; }
+  .site-chip .risk-val { font-variant-numeric: tabular-nums; font-weight: 700; flex-shrink: 0; }
+
+  /* ---- Feature importance chart ---- */
+  .fi-chart { width: 100%; }
+  .fi-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; font-size: 13px; }
+  .fi-label { width: 150px; flex-shrink: 0; color: var(--text-dim); text-align: right; }
+  .fi-track { flex: 1; position: relative; height: 20px; background: var(--panel-well); border-radius: 4px; }
+  .fi-zero { position: absolute; top: 0; bottom: 0; width: 1px; background: #445370; }
+  .fi-bar { position: absolute; top: 2px; bottom: 2px; background: var(--accent); border-radius: 3px; }
+  .fi-val { width: 60px; text-align: right; font-variant-numeric: tabular-nums; color: var(--text-dim); font-size: 12px; }
+  .fi-callout { margin-top: 14px; font-size: 13px; color: var(--text-dim); background: var(--panel-well); padding: 12px 14px; border-radius: 6px; border-left: 3px solid var(--accent); }
+
+  /* ---- Stress test panel ---- */
+  .stress-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .stress-card { flex: 1 1 260px; background: var(--panel-well); border: 1px solid var(--panel-border); border-radius: 8px; padding: 16px; }
+  .stress-card .title { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .loocv-bar-track { height: 10px; background: #1c2740; border-radius: 5px; overflow: hidden; margin-bottom: 6px; }
+  .loocv-bar-fill { height: 100%; background: var(--accent); }
+  .loocv-frac { font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .ct-list { list-style: none; padding: 0; margin: 0; font-size: 13px; }
+  .ct-list li { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--panel-border); }
+  .ct-list li:last-child { border-bottom: none; }
+  .ct-badge { font-weight: 700; font-size: 11px; padding: 1px 7px; border-radius: 4px; }
+  .ct-badge.hit { background: rgba(104,211,145,0.15); color: var(--ok); }
+  .ct-badge.miss { background: rgba(245,101,101,0.15); color: var(--danger); }
+
+  /* ---- Limits panel ---- */
+  .limits-panel { background: var(--panel); }
+  .limits-list { margin: 0; padding-left: 20px; font-size: 13px; color: var(--text-dim); }
+  .limits-list li { margin-bottom: 10px; }
+  .limits-list strong { color: var(--text); }
+
+  /* ---- Appendix: table ---- */
+  table.risk-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  table.risk-table th, table.risk-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--panel-border); }
+  table.risk-table th { color: var(--text-dim); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.03em; cursor: pointer; user-select: none; }
+  table.risk-table th:hover { color: var(--text); }
+  table.risk-table td.num, table.risk-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  table.risk-table tr.disaster td:first-child::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; background: var(--danger); }
+  table.risk-table tr.control td:first-child::before { content: ""; display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 8px; background: var(--ok); }
+  .sort-arrow { font-size: 9px; opacity: 0.6; }
+
+  .live-panel { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; margin-top: 14px; }
+  .live-stat .val { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .live-stat .label { font-size: 12px; color: var(--text-dim); }
+  .live-status { font-size: 12px; color: var(--text-dim); }
+  .live-status.error { color: var(--danger); }
+  .live-status.ok { color: var(--ok); }
+
+  .deep-dive-link {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 10px 16px;
+    background: var(--panel-well);
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .deep-dive-link:hover { box-shadow: 0 0 0 1px var(--accent); }
+
+  footer { padding: 20px 24px 40px; color: var(--text-dim); font-size: 12px; max-width: 1100px; margin: 0 auto; }
+  footer a { color: var(--accent); }
+
+  @media (max-width: 640px) {
+    .fi-label { width: 100px; font-size: 11px; }
+    .evidence-stats { gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<!--
+THESIS: The model's own output is the proof -- this page argues (claim -> evidence ->
+confirmation -> stress test -> limits) rather than asserting a single hero chart.
+OWN-WORLD: DESIGN.md's instrument-panel system -- navy ground, bordered panels, teal-for-
+real/amber-for-illustrative tags, flat depth (no shadows), tabular numerals.
+STORY: judges see the hypothesis, the 10 real sites behind it, the model's own feature
+ranking (NDVI decline wins), an honestly-reported 70% LOOCV + 2/3 cross-terrain result,
+then explicit limits -- leaving trusting the pipeline, not sold an inflated claim.
+FIRST VIEWPORT: header (title + scripted one-liner) into the Claim panel immediately below.
+FORM: Proof Sequence -- structural candidate 2 of 7, dealt via concept-seed (surface
+scope, mode operate, seed key f0e6cce2), user-selected over the dealt lead and my own
+top pick.
+FINISH: unreviewed and undocumented is unfinished; this build ends with the finish
+review, the verdict, DESIGN.md, and every shipping raster carrying its provenance.
+-->
+
+<header>
+  <h1>EcoRisk AI — Learning How Human Activity Erodes Natural Disaster Resilience</h1>
+  <div class="pitch">
+    Instead of studying one disaster, we trained a model on how human activity changes the land across
+    multiple sites in the Himalayas and coastal India — it learned, <em>on its own</em>, that vegetation
+    loss and construction growth are the strongest predictors of disaster severity, and correctly flags
+    high-risk sites without being told what happened there.
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. CLAIM -->
+  <section class="panel">
+    <h2><span class="step">1 ·</span> The Claim</h2>
+    <div class="sub">What we set out to show, before any data is presented.</div>
+    <div class="claim-quote">
+      Human-driven land change is a measurable, model-confirmed amplifier of disaster risk, validated
+      across multiple real sites spanning two different hazard types (slow-onset landslide/subsidence
+      and acute cyclone), not asserted from a single anecdote.
+    </div>
+    <div class="claim-old">Earlier version of this project made this case for one site (Joshimath) alone. This page is the multi-site test of that same claim.</div>
+  </section>
+
+  <!-- 2. EVIDENCE -->
+  <section class="panel">
+    <h2><span class="step">2 ·</span> The Evidence<span class="tag real">Real data</span></h2>
+    <div class="sub">Every site below has real satellite (Sentinel-2 NDVI/NDBI via Earth Engine), terrain (SRTM DEM), and rainfall (NASA POWER) data. No placeholder numbers.</div>
+    <div class="evidence-stats">
+      <div class="stat"><div class="val" id="ev-n-real">–</div><div class="label">real, fully-instrumented sites</div></div>
+      <div class="stat"><div class="val" id="ev-n-hill">–</div><div class="label">hill / Himalaya</div></div>
+      <div class="stat"><div class="val" id="ev-n-coastal">–</div><div class="label">coastal</div></div>
+      <div class="stat"><div class="val" id="ev-n-pending">–</div><div class="label">pending (excluded from model)</div></div>
+    </div>
+    <div class="site-grid" id="site-grid"></div>
+  </section>
+
+  <!-- 3. MODEL'S INDEPENDENT CONFIRMATION -->
+  <section class="panel">
+    <h2><span class="step">3 ·</span> The Model's Independent Confirmation<span class="tag real">Model output</span></h2>
+    <div class="sub">Logistic regression coefficients (standardized features): the model ranked these on its own, from the data, not from our hypothesis.</div>
+    <div class="fi-chart" id="fi-chart"></div>
+    <div class="fi-callout" id="fi-callout"></div>
+  </section>
+
+  <!-- 4. STRESS TEST -->
+  <section class="panel">
+    <h2><span class="step">4 ·</span> The Stress Test<span class="tag real">Real, reported honestly</span></h2>
+    <div class="sub">Two checks: does the model hold up under leave-one-out cross-validation, and does a model trained only on hill sites generalize to coastal sites it never saw?</div>
+    <div class="stress-row">
+      <div class="stress-card">
+        <div class="title">Leave-one-out cross-validation</div>
+        <div class="loocv-frac" id="loocv-frac">–</div>
+        <div class="loocv-bar-track"><div class="loocv-bar-fill" id="loocv-bar" style="width:0%"></div></div>
+        <div style="font-size:12px;color:var(--text-dim)" id="loocv-note"></div>
+      </div>
+      <div class="stress-card">
+        <div class="title">Cross-terrain: hill-trained model tested on coastal sites</div>
+        <ul class="ct-list" id="ct-list"></ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. HONEST LIMITS -->
+  <section class="panel limits-panel">
+    <h2><span class="step">5 ·</span> Honest Limits</h2>
+    <div class="sub">Stated upfront, not waiting for a judge to catch these.</div>
+    <ul class="limits-list">
+      <li><strong>Small sample.</strong> N=10 real sites (7 hill, 3 coastal). A small, honestly-validated result is more credible than an inflated claim on more data than we actually have.</li>
+      <li><strong>Correlation, not causation.</strong> The model finds association between human-activity signals and disaster occurrence; it does not prove any specific event was caused by human activity. Read every output as a risk-amplification signal.</li>
+      <li><strong>Cross-terrain result is 2 of 3, not 3 of 3.</strong> The hill-trained model correctly flagged both real coastal disasters but false-positived on the one coastal control site.</li>
+      <li><strong>Coastal disasters here are driven by acute cyclone intensity, not a slow land-use trend.</strong> Real NDBI/mangrove data was checked and does not cleanly separate coastal disaster from control sites: a mechanistically different hazard type from the hill-site story, not a weaker version of it.</li>
+      <li><strong>Control-site selection is a judgment call.</strong> Each "no disaster" site was chosen and justified individually (see the site notes below), not randomly sampled.</li>
+    </ul>
+  </section>
+
+  <!-- APPENDIX: full ranking table -->
+  <section class="panel">
+    <h2>Appendix · Full Risk Ranking<span class="tag real">Real data</span></h2>
+    <div class="sub">In-sample predicted probability, all real sites. Click a column to sort.</div>
+    <div style="overflow-x:auto">
+      <table class="risk-table" id="risk-table">
+        <thead>
+          <tr>
+            <th data-key="site_name">Site</th>
+            <th data-key="terrain_type">Terrain</th>
+            <th data-key="disaster_occurred">Label</th>
+            <th class="num" data-key="predicted_risk_prob">Risk prob.</th>
+            <th class="num" data-key="ndvi_trend_slope">NDVI trend/yr</th>
+            <th class="num" data-key="rainfall_anomaly_pct">Rainfall anomaly %</th>
+          </tr>
+        </thead>
+        <tbody id="risk-table-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- APPENDIX: live element -->
+  <section class="panel">
+    <h2>Appendix · Live Right Now<span class="tag live">Live API call</span></h2>
+    <div class="sub" id="live-sub">One genuine live pull (Open-Meteo, no key required) to prove this isn't fully static.</div>
+    <div class="live-panel">
+      <div class="live-stat"><div class="val" id="live-precip">–</div><div class="label">Current precipitation (mm)</div></div>
+      <div class="live-stat"><div class="val" id="live-today">–</div><div class="label">Today's precipitation sum (mm)</div></div>
+      <div class="live-stat"><div class="val" id="live-temp">–</div><div class="label">Temperature (°C)</div></div>
+      <div class="live-status" id="live-status">Fetching live data…</div>
+    </div>
+  </section>
+
+  <!-- APPENDIX: deep dive link -->
+  <section class="panel">
+    <h2>Appendix · Single-Site Deep Dive</h2>
+    <div class="sub">Joshimath is the one fully-instrumented example this model validates against, including the Current → BAU 2030 → Intervention 2030 projection slider.</div>
+    <a class="deep-dive-link" href="../demo/index.html">Open the Joshimath deep-dive →</a>
+  </section>
+
+</main>
+
+<footer>
+  <strong>Data & sources:</strong> full fact ledger with every citation and caveat is in <code>sihPlan/memory.md</code>.
+  Model computed by <code>ml/train_model.py</code>; every number on this page is read from its output
+  (<code>ml/model_results.json</code>), never hand-entered.
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

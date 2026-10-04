@@ -1,0 +1,13 @@
+{
+  "mode": "long_term_no_real_before",
+  "before": {
+    "date": "2016-04-13",
+    "cloud_pct": 0.5,
+    "requested_date": "2016-02-15"
+  },
+  "after": {
+    "date": "2023-05-22",
+    "cloud_pct": 2.9,
+    "requested_date": "2023-06-16"
+  }
+}

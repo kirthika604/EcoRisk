@@ -1,0 +1,3 @@
+site_id,cyclone_name,landfall_time_utc,landfall_lat,landfall_lon,imd_wind_kt,imd_wind_kmh,imd_pressure_mb,imd_grade,imd_grade_full,jtwc_wind_kt,jtwc_wind_kmh,source
+sundarbans,AMPHAN,2020-05-20 09:00:00,21.4,88.1,90,166.7,960,ESCS,Extremely Severe Cyclonic Storm,95,175.9,"NOAA IBTrACS v04r01 (ibtracs.NI.list.v04r01.csv), NEWDELHI (IMD) agency track; downloaded 2026-08-31"
+odisha_coast,FANI,2019-05-03 03:00:00,19.6,85.7,100,185.2,952,ESCS,Extremely Severe Cyclonic Storm,125,231.5,"NOAA IBTrACS v04r01 (ibtracs.NI.list.v04r01.csv), NEWDELHI (IMD) agency track; downloaded 2026-08-31"

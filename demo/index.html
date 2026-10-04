@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Joshimath Risk Amplification Demo — SIH26206</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --panel: #121b2e;
+    --panel-border: #23324d;
+    --text: #e7ecf5;
+    --text-dim: #9fb0c9;
+    --accent: #4fd1c5;
+    --accent2: #f6ad55;
+    --danger: #f56565;
+    --warn: #ecc94b;
+    --ok: #68d391;
+    --real-tag: #4fd1c5;
+    --mock-tag: #f6ad55;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+  }
+  header {
+    padding: 28px 24px 18px;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  header h1 {
+    margin: 0 0 6px;
+    font-size: 22px;
+  }
+  header .pitch {
+    color: var(--text-dim);
+    max-width: 900px;
+    font-size: 15px;
+  }
+  main {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+  }
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    padding: 20px;
+  }
+  .panel h2 {
+    margin: 0 0 4px;
+    font-size: 16px;
+  }
+  .panel .sub {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-bottom: 16px;
+  }
+  .tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 2px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .tag.real { background: rgba(79,209,197,0.15); color: var(--real-tag); border: 1px solid rgba(79,209,197,0.4); }
+  .tag.mock { background: rgba(246,173,85,0.15); color: var(--mock-tag); border: 1px solid rgba(246,173,85,0.4); }
+  .tag.live { background: rgba(104,211,145,0.15); color: var(--ok); border: 1px solid rgba(104,211,145,0.4); }
+
+  .charts-row { display: flex; gap: 16px; flex-wrap: wrap; }
+  .chart-box { flex: 1 1 460px; min-width: 300px; }
+  .chart-box svg { width: 100%; height: auto; display: block; background: #0d1626; border-radius: 6px; }
+  .legend-line { font-size: 12px; color: var(--text-dim); margin-top: 6px; }
+  .legend-swatch { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:middle; }
+
+  .threshold-numbers { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 14px; }
+  .stat { min-width: 160px; }
+  .stat .val { font-size: 26px; font-weight: 700; }
+  .stat .label { font-size: 12px; color: var(--text-dim); }
+  .citation {
+    font-size: 12px;
+    color: var(--text-dim);
+    background: #0d1626;
+    border-left: 3px solid var(--accent);
+    padding: 10px 12px;
+    border-radius: 4px;
+    margin-top: 8px;
+  }
+
+  .backtest-row { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 10px; }
+  .backtest-card {
+    flex: 1 1 220px;
+    background: #0d1626;
+    border-radius: 8px;
+    padding: 12px 14px;
+    border: 1px solid var(--panel-border);
+  }
+  .backtest-card .title { font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+  .bar-track { flex: 1; height: 8px; background: #1c2740; border-radius: 4px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-fill.under { background: var(--ok); }
+  .bar-fill.over { background: var(--danger); }
+  .bar-val { width: 70px; text-align: right; font-variant-numeric: tabular-nums; }
+
+  .slider-wrap { margin-top: 4px; }
+  .slider-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--text-dim); margin-bottom: 4px; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  .scenario-grid { display: flex; gap: 16px; margin-top: 18px; flex-wrap: wrap; }
+  .scenario-card {
+    flex: 1 1 220px;
+    background: #0d1626;
+    border-radius: 8px;
+    padding: 14px 16px;
+    border: 1px solid var(--panel-border);
+  }
+  .scenario-card.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .scenario-card .name { font-size: 13px; color: var(--text-dim); margin-bottom: 6px; }
+  .scenario-card .vuln { font-size: 30px; font-weight: 700; }
+  .scenario-card .band { font-size: 12px; margin-top: 2px; }
+  .scenario-card .detail { font-size: 11px; color: var(--text-dim); margin-top: 8px; }
+  .narrative { margin-top: 16px; font-size: 13px; color: var(--text-dim); background: #0d1626; padding: 12px 14px; border-radius: 6px; }
+
+  .live-panel { display: flex; align-items: center; gap: 24px; flex-wrap: wrap; }
+  .live-stat .val { font-size: 28px; font-weight: 700; }
+  .live-stat .label { font-size: 12px; color: var(--text-dim); }
+  .live-status { font-size: 12px; color: var(--text-dim); }
+  .live-status.error { color: var(--danger); }
+  .live-status.ok { color: var(--ok); }
+
+  footer { padding: 20px 24px 40px; color: var(--text-dim); font-size: 12px; max-width: 1100px; margin: 0 auto; }
+  footer ul { padding-left: 18px; }
+  footer a { color: var(--accent); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Joshimath: Human-Activity Risk Amplification</h1>
+  <div class="pitch">
+    Every disaster tool predicts the event. This shows how human activity is already pushing Joshimath
+    (Chamoli district, Uttarakhand) toward a threshold that has caused failures before — and what
+    changing that activity does to the projected outcome.
+  </div>
+</header>
+
+<main>
+
+  <section class="panel">
+    <h2>1 · Human-Activity Trend<span class="tag real">Real data</span></h2>
+    <div class="sub">Sentinel-2 NDVI (vegetation) and NDBI (built-up index), Jan 2019 – May 2023, via Google Earth Engine. Dashed line = linear trend fit, extended to 2030.</div>
+    <div class="charts-row">
+      <div class="chart-box">
+        <svg id="chart-ndvi" viewBox="0 0 460 220"></svg>
+        <div class="legend-line"><span class="legend-swatch" style="background:#4fd1c5"></span>NDVI observed &nbsp;&nbsp;<span class="legend-swatch" style="background:#f6ad55"></span>trend → 2030</div>
+      </div>
+      <div class="chart-box">
+        <svg id="chart-ndbi" viewBox="0 0 460 220"></svg>
+        <div class="legend-line"><span class="legend-swatch" style="background:#4fd1c5"></span>NDBI observed &nbsp;&nbsp;<span class="legend-swatch" style="background:#f6ad55"></span>trend → 2030</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Rainfall Trigger Threshold<span class="tag real">Real, cited</span></h2>
+    <div class="sub">Region-specific published threshold, backtested against the two documented Joshimath subsidence windows.</div>
+    <div class="threshold-numbers">
+      <div class="stat"><div class="val" id="th-10">–</div><div class="label">10-day antecedent rainfall threshold (mm)</div></div>
+      <div class="stat"><div class="val" id="th-20">–</div><div class="label">20-day antecedent rainfall threshold (mm)</div></div>
+    </div>
+    <div class="citation" id="th-citation"></div>
+    <div class="backtest-row" id="backtest-cards"></div>
+    <div class="narrative" id="backtest-narrative"></div>
+  </section>
+
+  <section class="panel">
+    <h2>3 · Projection: Current → Business-as-Usual 2030 → Intervention 2030<span class="tag mock">Illustrative index</span></h2>
+    <div class="sub">
+      Vulnerability index = normalized NDVI loss + NDBI growth relative to the observed 2019–2023 range
+      (see scenario detail for the exact numbers). This is a hand-built demo index, not a validated
+      statistical model — bands are for illustration only.
+    </div>
+    <div class="slider-wrap">
+      <div class="slider-labels"><span>Current (2023)</span><span>BAU 2030</span><span>Intervention 2030</span></div>
+      <input type="range" id="scenario-slider" min="0" max="2" value="0" step="1">
+    </div>
+    <div class="scenario-grid" id="scenario-grid"></div>
+    <div class="narrative" id="scenario-narrative"></div>
+  </section>
+
+  <section class="panel">
+    <h2>4 · Live Right Now<span class="tag live">Live API call</span></h2>
+    <div class="sub">One genuine live pull (Open-Meteo, no key required) for Joshimath's coordinates — proves this isn't fully static.</div>
+    <div class="live-panel">
+      <div class="live-stat"><div class="val" id="live-precip">–</div><div class="label">Current precipitation (mm)</div></div>
+      <div class="live-stat"><div class="val" id="live-today">–</div><div class="label">Today's precipitation sum (mm)</div></div>
+      <div class="live-stat"><div class="val" id="live-temp">–</div><div class="label">Temperature (°C)</div></div>
+      <div class="live-status" id="live-status">Fetching live data…</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <strong>Data & sources</strong>
+  <ul>
+    <li>NDVI / NDBI: Sentinel-2, processed in Google Earth Engine (real, project-collected).</li>
+    <li>Historical rainfall: NASA POWER (MERRA-2 corrected precipitation), 2019–2023 (real, direct source).</li>
+    <li>Live rainfall: Open-Meteo API, fetched at page load (real, live).</li>
+    <li>Rainfall threshold: Kanungo &amp; Sharma (2014), <em>Rainfall thresholds for prediction of shallow
+      landslides around Chamoli-Joshimath region, Garhwal Himalayas, India</em>, Landslides 11, 629–638,
+      DOI <a href="https://doi.org/10.1007/s10346-013-0438-9" target="_blank" rel="noopener">10.1007/s10346-013-0438-9</a>.
+      Primary paper is paywalled — figures taken from a secondary source summarizing it (disclosed openly, see project memory).</li>
+    <li>Subsidence event log: secondary press reporting (Deccan Herald / Outlook India / BusinessToday, Jan 2023)
+      citing an NRSC/ISRO DInSAR report no longer hosted on nrsc.gov.in.</li>
+    <li>Vulnerability index (section 3): illustrative, built for this demo — not a peer-reviewed model.</li>
+  </ul>
+  <div>Full fact ledger: <code>sihPlan/memory.md</code></div>
+</footer>
+
+<script src="data.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "mode": "season_matched_pre_post",
+  "before": {
+    "date": "2023-01-10",
+    "cloud_pct": 8.7,
+    "requested_date": "2022-12-04"
+  },
+  "after": {
+    "date": "2024-02-04",
+    "cloud_pct": 5.0,
+    "requested_date": "2024-01-18"
+  }
+}
