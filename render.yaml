@@ -1,8 +1,16 @@
-# Render blueprint: New + > Blueprint > pick this repo. Free plan sleeps after ~15 min idle.
+# Render blueprint (no Docker): New + > Blueprint > pick this repo > Apply.
+# Free plan: sleeps after ~15 min idle (first visit then takes ~1 min); redeploys on every push to main.
 services:
   - type: web
     name: ecorisk-ai
-    runtime: docker
+    runtime: python
     plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python ml/ef_server.py
     healthCheckPath: /healthz
     autoDeploy: true
+    envVars:
+      - key: HOST
+        value: 0.0.0.0
+      - key: PYTHON_VERSION
+        value: 3.13.5

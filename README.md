@@ -34,10 +34,11 @@ python3 -m pytest ml/test_ef.py  # 21 tests (needs ml/ef_features.csv: python3 m
 ```
 
 ## Deploy
-- **Hugging Face Spaces:** create a *Docker* Space and add the two files in
-  [`deploy/huggingface/`](deploy/huggingface/). The Space pulls this repo at build time.
-- **Any Docker host** (Render, Railway, Fly, ...): the root [`Dockerfile`](Dockerfile) serves on `$PORT`.
-  [`render.yaml`](render.yaml) is a ready Render blueprint.
+- **Render (free, no Docker):** New + > Blueprint > this repo > Apply. [`render.yaml`](render.yaml) installs
+  `requirements.txt` and runs `python ml/ef_server.py`; it redeploys on every push to `main`.
+- **Hugging Face Spaces (Docker SDK):** add the two files in [`deploy/huggingface/`](deploy/huggingface/);
+  the Space pulls this repo at build time.
+- **Any Docker host:** the root [`Dockerfile`](Dockerfile) serves on `$PORT`.
 
 ## Rebuild the models from scratch
 ```bash
