@@ -283,3 +283,76 @@ def test_command_line_reads_outside_files():
                         "--elevation", "2095", "--window", "24"], capture_output=True, text=True, timeout=120)
     assert r.returncode == 0, r.stderr[-500:]
     assert "2023-08-13" in r.stdout and "recalibrated" in r.stdout
+
+
+# ---------- bring your own dataset (ml/generic.py) ----------
+def _ai4i():
+    import generic
+    return generic, generic.read_csv(open(os.path.join(ROOT, "ecorisk-ai", "samples", "ai4i2020.csv"), encoding="utf-8").read())
+
+
+def test_generic_ai4i_excludes_leakage_and_ids_and_scores_well():
+    G, df = _ai4i()
+    assert "UDI" in df.columns  # byte-order mark stripped from the first header
+    p = G.profile(df)
+    assert p["suggested_target"] == "Machine failure"
+    r = G.train(df, "Machine failure")
+    for c in ("UDI", "Product ID", "TWF", "HDF", "PWF", "OSF", "RNF"):
+        assert c in r["excluded"], c
+    assert r["chosen"] == "gradient boosting" and r["test"]["pr_auc"] > 0.7 and r["test"]["roc_auc"] > 0.9
+    base = next(m for m in r["models"] if m["model"].startswith("baseline"))["test"]["pr_auc"]
+    assert r["test"]["pr_auc"] > 10 * base
+    assert any("power" in e for e in r["engineered"])
+    pred = G.predict(r["model_id"], G.read_csv(r["demo_rows_csv"]))
+    assert len(pred) == 25 and pred.probability.between(0, 1).all()
+    acc = (pred.predicted.astype(str) == pd.Series(r["demo_actual"])).mean()
+    assert acc >= 0.8  # held-out test rows, never seen by the deployed model
+
+
+def test_generic_multiclass_regression_dates_and_errors():
+    import generic as G
+    from sklearn.datasets import load_diabetes, load_iris
+    ir = load_iris(as_frame=True)
+    f = ir.frame.copy()
+    f["species"] = ir.target_names[f.pop("target")]
+    r = G.train(f, "species")
+    assert r["task"] == "multiclass" and r["test"]["accuracy"] > 0.8
+    d = load_diabetes(as_frame=True).frame
+    r = G.train(d, "target")
+    assert r["task"] == "regression" and r["test"]["r2"] > 0.2
+    rng = np.random.default_rng(0)
+    n = 600
+    f = pd.DataFrame({"date": pd.date_range("2022-01-01", periods=n).strftime("%Y-%m-%d"),
+                      "x": rng.normal(size=n)})
+    f["y"] = (f.x + rng.normal(scale=0.5, size=n) > 0).astype(int)
+    r = G.train(f, "y")
+    assert r["split"].startswith("by time")
+    with pytest.raises(ValueError, match="missing columns"):
+        G.predict(r["model_id"], f[["date"]])
+    with pytest.raises(ValueError):
+        G.train(f, "nope")
+
+
+def test_generic_api_endpoints():
+    import json, urllib.request
+    srv = _serve()
+    try:
+        base = f"http://127.0.0.1:{srv.server_port}"
+        def post(action, body):
+            req = urllib.request.Request(f"{base}/api/generic/{action}", json.dumps(body).encode(), {"Content-Type": "application/json"})
+            try:
+                r = urllib.request.urlopen(req, timeout=120)
+                return r.status, json.load(r)
+            except urllib.error.HTTPError as e:
+                return e.code, json.load(e)
+        csv = open(os.path.join(ROOT, "ecorisk-ai", "samples", "ai4i2020.csv"), encoding="utf-8").read()
+        code, prof = post("profile", {"csv": csv})
+        assert code == 200 and prof["plan"]["target"] == "Machine failure" and "TWF" in prof["plan"]["excluded"]
+        code, res = post("train", {"csv": csv, "target": "Machine failure"})
+        assert code == 200 and res["test"]["roc_auc"] > 0.9
+        code, pr = post("predict", {"model_id": res["model_id"], "csv": res["demo_rows_csv"]})
+        assert code == 200 and pr["total"] == 25 and "probability" in pr["csv"].splitlines()[0]
+        assert post("predict", {"model_id": "nope", "csv": res["demo_rows_csv"]})[0] == 400
+        assert post("profile", {"csv": "only_one_column\n1\n2"})[0] == 400
+    finally:
+        srv.shutdown()

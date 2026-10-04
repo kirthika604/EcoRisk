@@ -82,6 +82,7 @@ def read_weather_csv(text):
     (e.g. Open-Meteo/NASA POWER downloads) and accepts ',' ';' or tab separators."""
     import csv
     import io
+    text = text.lstrip("\ufeff")  # byte-order mark from Excel / some exports
     lines = [l for l in text.replace("\r\n", "\n").replace("\r", "\n").split("\n")]
     if not any(l.strip() for l in lines):
         raise ValueError("No columns to parse from file")

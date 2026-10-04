@@ -319,6 +319,15 @@
   .land-sum .bar2 i { display: block; height: 100%; border-radius: 4px; }
   .calc > .well { display: flex; flex-direction: column; }
 
+  .gtable td, .gtable th { white-space: nowrap; } .gtable td:last-child { white-space: normal; color: var(--text-dim); font-size: 11px; }
+  .gtable tr.off td { color: var(--text-dim); } .gtable tr.off td:nth-child(2) { text-decoration: line-through; }
+  .gtable tr.tgt td { color: var(--accent); font-weight: 700; }
+  .cm { display: grid; grid-template-columns: auto 1fr 1fr; gap: 4px; max-width: 360px; font-size: 12px; }
+  .cm div { padding: 10px; border-radius: 6px; text-align: center; background: var(--panel-well); border: 1px solid var(--panel-border); font-variant-numeric: tabular-nums; }
+  .cm .h { background: transparent; border: 0; color: var(--text-dim); font-size: 11px; }
+  .cm .good { background: rgba(85,161,85,.16); } .cm .bad { background: rgba(200,66,63,.12); }
+  .cm b { display: block; font-size: 20px; }
+
   footer { max-width: 1160px; margin: 0 auto; padding: 0 24px 40px; color: var(--text-dim); font-size: 12px; }
 </style>
 </head>
@@ -351,6 +360,7 @@
     <a href="#outlook">Site outlook</a>
     <a href="#calc">What-if calculator</a>
     <a href="#unseen">Unseen data</a>
+    <a href="#byod">Any dataset</a>
     <a href="#aware">Stay safe</a>
     <a href="#how">How it predicts</a>
     <a href="#validation">Validation</a>
@@ -559,9 +569,62 @@
   </section>
 
 
+  <!-- ================= ANY DATASET ================= -->
+  <section class="panel" id="byod" aria-labelledby="h-byod">
+    <h2 id="h-byod"><span class="step">5 &middot;</span> Any dataset: bring your own <span class="tag live">Live input</span></h2>
+    <p class="sub">The same predict-what-happens-next pipeline works on any table, not just weather. Load a CSV, choose what to predict, and EcoRisk AI cleans it, engineers features, compares models on a validation split, reports honest test metrics, and predicts on new rows. Try it with the AI4I 2020 predictive-maintenance dataset (machine failures).</p>
+    <div class="row">
+      <button type="button" id="gSample">Try AI4I 2020 (machine failures)</button>
+      <label class="f">or upload a CSV<input id="gFile" type="file" accept=".csv,text/csv"></label>
+    </div>
+    <p class="note" style="margin-top:6px">AI4I 2020: S. Matzka, UCI Machine Learning Repository, CC BY 4.0. Files up to 5 MB.</p>
+    <div class="err" id="gErr" role="alert"></div>
+
+    <div id="gStep2" class="hide">
+      <h3 class="t" style="margin-top:14px">1 &middot; Your data</h3>
+      <div class="row" style="margin-bottom:10px">
+        <label class="f">Predict this column<select id="gTarget"></select></label>
+        <span class="note" id="gMeta"></span>
+      </div>
+      <div style="overflow-x:auto"><table class="gtable"><thead><tr><th>Use</th><th>Column</th><th>Type</th><th>Missing</th><th>Example</th><th>Why</th></tr></thead><tbody id="gCols"></tbody></table></div>
+      <p class="note" id="gEng"></p>
+      <div class="row" style="margin-top:10px"><button type="button" id="gTrain">Train and validate</button><span class="note" id="gBusy"></span></div>
+    </div>
+
+    <div id="gStep3" class="hide">
+      <h3 class="t" style="margin-top:18px">2 &middot; Results on the held-out test rows</h3>
+      <p class="note" id="gSplit"></p>
+      <div class="stats" id="gStats"></div>
+      <div class="cols">
+        <div>
+          <h3 class="t">Models compared (chosen on validation)</h3>
+          <div style="overflow-x:auto"><table><thead id="gModHead"></thead><tbody id="gModels"></tbody></table></div>
+          <h3 class="t" style="margin-top:16px" id="gCmT">Confusion matrix (test)</h3>
+          <div id="gCm"></div>
+        </div>
+        <div>
+          <h3 class="t">What drives the prediction</h3>
+          <p class="note" style="margin:0 0 8px">How much the test score drops when each input is shuffled.</p>
+          <div id="gDrivers"></div>
+          <h3 class="t" style="margin-top:16px">Left out, and why</h3>
+          <ul class="why-list" id="gExcl"></ul>
+        </div>
+      </div>
+
+      <h3 class="t" style="margin-top:18px">3 &middot; Predict on new rows</h3>
+      <div class="row">
+        <button type="button" class="sec" id="gDemoRows">Predict 25 held-out test rows (never seen by the model)</button>
+        <label class="f">or upload new rows (CSV)<input id="gNewFile" type="file" accept=".csv,text/csv"></label>
+        <button type="button" class="sec hide" id="gDownload">Download predictions CSV</button>
+      </div>
+      <div class="err" id="gErr2" role="alert"></div>
+      <div style="overflow-x:auto;margin-top:10px"><table><thead id="gPredHead"></thead><tbody id="gPred"></tbody></table></div>
+    </div>
+  </section>
+
   <!-- ================= AWARENESS ================= -->
   <section class="panel" id="aware" aria-labelledby="h-aw">
-    <h2 id="h-aw"><span class="step">5 &middot;</span> Stay safe: turn a prediction into action <span class="tag live">Follows your outlook</span></h2>
+    <h2 id="h-aw"><span class="step">6 &middot;</span> Stay safe: turn a prediction into action <span class="tag live">Follows your outlook</span></h2>
     <p class="sub">A prediction only matters if someone acts on it. The level that matches the latest outlook above is highlighted. Always follow official warnings from IMD, NDMA and your district administration first.</p>
     <div class="levels" id="levels">
       <div class="well lvl g" data-l="0"><h4>Normal <span class="you">Current outlook</span></h4><p>No flag from either model.</p>
@@ -592,14 +655,14 @@
 
   <!-- ================= HOW ================= -->
   <section class="panel" id="how" aria-labelledby="h-how">
-    <h2 id="h-how"><span class="step">6 &middot;</span> How EcoRisk AI predicts <span class="tag real">Real pipeline</span></h2>
+    <h2 id="h-how"><span class="step">7 &middot;</span> How EcoRisk AI predicts <span class="tag real">Real pipeline</span></h2>
     <p class="sub">Two models answer two questions. The outlook combines them with a fixed, published rule.</p>
     <div class="pipe" id="pipe"></div>
   </section>
 
   <!-- ================= VALIDATION ================= -->
   <section class="panel" id="validation" aria-labelledby="h-val">
-    <h2 id="h-val"><span class="step">7 &middot;</span> Validation <span class="tag real">Real, reported honestly</span></h2>
+    <h2 id="h-val"><span class="step">8 &middot;</span> Validation <span class="tag real">Real, reported honestly</span></h2>
     <p class="sub">The 72 h model is trained on 1995&ndash;2018, tuned on 2019&ndash;2021, and scored once on 2022&ndash;2025, data it never saw. The structural model is scored leave-one-site-out.</p>
     <div class="stats" id="stats"></div>
     <div class="cols">
@@ -629,7 +692,7 @@
   </section>
 
   <section class="panel" aria-labelledby="h-lim">
-    <h2 id="h-lim"><span class="step">8 &middot;</span> Honest limits</h2>
+    <h2 id="h-lim"><span class="step">9 &middot;</span> Honest limits</h2>
     <ul class="limits" id="limits"></ul>
   </section>
 </main>
@@ -1358,6 +1421,91 @@ function setWindow(h) {
   document.querySelectorAll(".hl").forEach(e => { e.textContent = `${h} h`; });
 }
 let LASTD = null;
+
+
+/* ================= ANY DATASET (ml/generic.py) ================= */
+const G = { csv: "", prof: null, res: null, predCsv: "" };
+const gpost = (action, body) => j(`/api/generic/${action}`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+async function gLoad(text) {
+  $("gErr").textContent = ""; $("gStep3").classList.add("hide"); G.csv = text;
+  try { G.prof = await gpost("profile", { csv: text }); gShowProfile(G.prof.suggested_target); }
+  catch (e) { $("gErr").textContent = friendly(e.message); }
+}
+async function gShowProfile(target, refresh) {
+  if (refresh) { try { G.prof = await gpost("profile", { csv: G.csv, target }); } catch (e) { $("gErr").textContent = friendly(e.message); return; } }
+  const P = G.prof, plan = P.plan;
+  $("gStep2").classList.remove("hide");
+  $("gTarget").innerHTML = P.columns.map(c => `<option value="${c.name}">${c.name}</option>`).join(""); $("gTarget").value = plan.target;
+  const tl = { binary: "yes/no prediction", multiclass: "category prediction", regression: "number prediction" }[plan.task];
+  $("gMeta").textContent = `${P.rows.toLocaleString()} rows · ${P.columns.length} columns · ${tl}` + (plan.positive_rate != null ? ` · ${pct(plan.positive_rate, 1)} positive` : "");
+  $("gCols").innerHTML = P.columns.map(c => {
+    const isT = c.name === plan.target, why = plan.excluded[c.name];
+    return `<tr class="${isT ? "tgt" : why ? "off" : ""}"><td>${isT ? "target" : `<input type="checkbox" data-c="${encodeURIComponent(c.name)}" ${why ? "" : "checked"} aria-label="use ${c.name}">`}</td>
+      <td>${c.name}</td><td>${c.kind}</td><td>${c.missing}</td><td>${c.example ?? ""}</td><td>${isT ? "what we predict" : why || "used as an input"}</td></tr>`;
+  }).join("");
+  $("gEng").textContent = plan.engineered.length ? "Engineered features added: " + plan.engineered.join(" · ") : "";
+}
+$("gSample").onclick = async () => { try { gLoad(await j("/ecorisk-ai/samples/ai4i2020.csv")); } catch (e) { $("gErr").textContent = friendly(e.message); } };
+$("gFile").onchange = (e) => { const f = e.target.files[0]; if (f) f.text().then(gLoad); };
+$("gNewFile").addEventListener("click", () => { $("gErr2").textContent = ""; });
+$("gTarget").onchange = () => gShowProfile($("gTarget").value, true);
+$("gTrain").onclick = async () => {
+  const use = [...document.querySelectorAll('#gCols input[type=checkbox]')].filter(x => x.checked).map(x => decodeURIComponent(x.dataset.c));
+  $("gTrain").disabled = true; $("gBusy").textContent = "Training three models and validating…"; $("gErr").textContent = "";
+  try { G.res = await gpost("train", { csv: G.csv, target: $("gTarget").value, use }); gShowResults(G.res); }
+  catch (e) { $("gErr").textContent = friendly(e.message); }
+  finally { $("gTrain").disabled = false; $("gBusy").textContent = ""; }
+};
+function gShowResults(r) {
+  $("gStep3").classList.remove("hide");
+  $("gSplit").textContent = `Split: ${r.split} (${r.sizes.train.toLocaleString()} / ${r.sizes.validation.toLocaleString()} / ${r.sizes.test.toLocaleString()} rows). Chosen: ${r.chosen}, by ${r.selection_metric.replace("_", "-").toUpperCase()} on validation.`;
+  const t = r.test, base = r.models.find(m => m.model.startsWith("baseline")).test;
+  const tiles = r.task === "binary" ? [[t.pr_auc.toFixed(3), `PR-AUC (baseline ${base.pr_auc.toFixed(3)})`], [t.roc_auc?.toFixed(3) ?? "–", "ROC-AUC"],
+      [pct(t.precision), "precision: alerts that were right"], [pct(t.recall), "recall: positives caught"]]
+    : r.task === "multiclass" ? [[pct(t.accuracy, 1), `accuracy (baseline ${pct(base.accuracy, 1)})`], [t.macro_f1.toFixed(3), "macro F1"]]
+    : [[t.r2.toFixed(3), `R² (baseline ${base.r2.toFixed(3)})`], [t.mae.toFixed(3), "mean absolute error"], [t.rmse.toFixed(3), "RMSE"]];
+  $("gStats").innerHTML = tiles.map(([v, l]) => `<div class="well stat"><div class="v">${v}</div><div class="l">${l}</div></div>`).join("");
+  const keys = Object.keys(r.models[1].test);
+  $("gModHead").innerHTML = `<tr><th>Model</th><th>Validation ${r.selection_metric.replace("_", "-")}</th>${keys.map(k => `<th>Test ${k.replace("_", "-")}</th>`).join("")}</tr>`;
+  $("gModels").innerHTML = r.models.map(m => `<tr class="${m.model === r.chosen ? "best" : ""}"><td>${m.model}${m.model === r.chosen ? " · chosen" : ""}</td><td>${m.validation[r.selection_metric] ?? "–"}</td>${keys.map(k => `<td>${m.test[k] ?? "–"}</td>`).join("")}</tr>`).join("");
+  if (r.task === "binary" && r.confusion) {
+    const [[tn, fp], [fn, tp]] = r.confusion;
+    $("gCmT").classList.remove("hide");
+    $("gCm").innerHTML = `<div class="cm"><div class="h"></div><div class="h">predicted no</div><div class="h">predicted yes</div>
+      <div class="h">actual no</div><div class="good"><b>${tn}</b>correct</div><div class="bad"><b>${fp}</b>false alarms</div>
+      <div class="h">actual yes</div><div class="bad"><b>${fn}</b>missed</div><div class="good"><b>${tp}</b>caught</div></div>
+      <p class="note">Decision threshold ${r.threshold} (chosen on validation for best F1).</p>`;
+  } else if (r.task === "multiclass" && r.confusion) {
+    $("gCmT").classList.remove("hide");
+    const L = r.confusion.labels, M = r.confusion.matrix;
+    $("gCm").innerHTML = `<table><thead><tr><th>actual \\ predicted</th>${L.map(l => `<th>${l}</th>`).join("")}</tr></thead><tbody>${M.map((row, i) => `<tr><td>${L[i]}</td>${row.map((v, k) => `<td style="${i === k ? "color:var(--accent);font-weight:700" : ""}">${v}</td>`).join("")}</tr>`).join("")}</tbody></table>`;
+  } else { $("gCmT").classList.add("hide"); $("gCm").innerHTML = ""; }
+  const mx = Math.max(1e-9, ...r.drivers.map(d => d.importance));
+  $("gDrivers").innerHTML = r.drivers.map(d => `<div class="fi"><span title="${d.feature}">${d.feature.length > 24 ? d.feature.slice(0, 23) + "…" : d.feature}</span><div class="bar"><i style="left:0;width:${Math.max(0, d.importance) / mx * 100}%;background:var(--accent)"></i></div><span class="num">${d.importance.toFixed(3)}</span></div>`).join("");
+  const ex = Object.entries(r.excluded);
+  $("gExcl").innerHTML = (ex.length ? ex.map(([c, w]) => `<li><b>${c}</b>: ${w}</li>`).join("") : "<li>Nothing was left out.</li>") +
+    (r.engineered.length ? `<li><b>Added</b>: ${r.engineered.join(" · ")}</li>` : "");
+  $("gPred").innerHTML = ""; $("gPredHead").innerHTML = ""; $("gDownload").classList.add("hide");
+  $("gStep3").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function gPredict(text, actual) {
+  $("gErr2").textContent = "";
+  try {
+    const d = await gpost("predict", { model_id: G.res.model_id, csv: text });
+    if (actual) d.rows.forEach((r, i) => { r.actual = actual[i]; });  // held-out answers, shown for checking
+    const cols = Object.keys(d.rows[0] || {});
+    $("gPredHead").innerHTML = `<tr>${cols.map(c => `<th>${c.replace("_", " ")}</th>`).join("")}</tr>`;
+    $("gPred").innerHTML = d.rows.slice(0, 50).map(r => `<tr class="${r.predicted === 1 ? "alert" : ""}">${cols.map(c => `<td>${c === "probability" || c === "confidence" ? pct(r[c], 1) : r[c]}</td>`).join("")}</tr>`).join("");
+    G.predCsv = d.csv; $("gDownload").classList.remove("hide");
+    if (d.total > 50) $("gPred").innerHTML += `<tr><td colspan="${cols.length}" class="note">Showing 50 of ${d.total.toLocaleString()} rows. Download the CSV for all.</td></tr>`;
+  } catch (e) { $("gErr2").textContent = friendly(e.message); }
+}
+$("gDemoRows").onclick = () => gPredict(G.res.demo_rows_csv, G.res.demo_actual);
+$("gNewFile").onchange = (e) => { const f = e.target.files[0]; if (f) f.text().then(gPredict); };
+$("gDownload").onclick = () => {
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([G.predCsv], { type: "text/csv" }));
+  a.download = "ecorisk_predictions.csv"; document.body.appendChild(a); a.click(); a.remove();
+};
 
 /* ---------- boot ---------- */
 (async function init() {

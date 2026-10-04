@@ -16,6 +16,7 @@ import pandas as pd
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, "ml"))
 import ef_predict
+import generic
 from ef_data import STATIC
 
 MIME = {".html": "text/html; charset=utf-8", ".js": "text/javascript", ".css": "text/css",
@@ -133,6 +134,8 @@ class H(BaseHTTPRequestHandler):
 
     def do_POST(self):
         path = urlparse(self.path).path
+        if path.startswith("/api/generic/"):
+            return self.generic(path.rsplit("/", 1)[-1])
         if path == "/api/whatif":
             try:
                 n = int(self.headers.get("Content-Length", 0))
@@ -164,6 +167,30 @@ class H(BaseHTTPRequestHandler):
         except (ValueError, KeyError, pd.errors.ParserError) as e:
             self.send(400, {"error": str(e)})
         except Exception as e:  # never drop the connection: report it to the page instead
+            self.send(500, {"error": f"unexpected error: {type(e).__name__}: {e}"})
+
+    def generic(self, action):
+        """Bring-your-own-dataset endpoints: profile / train / predict (ml/generic.py)."""
+        try:
+            n = int(self.headers.get("Content-Length", 0))
+            if n > MAX_BYTES:
+                return self.send(413, {"error": "file too large (limit 5 MB)"})
+            body = json.loads(self.rfile.read(n))
+            if action == "predict":
+                out = generic.predict(body["model_id"], generic.read_csv(body["csv"]))
+                return self.send(200, {"total": len(out), "rows": out.head(500).to_dict("records"),
+                                       "csv": out.to_csv(index=False)})
+            df = generic.read_csv(body["csv"])
+            if action == "profile":
+                prof = generic.profile(df)
+                prof["plan"] = generic.plan(df, body.get("target") or prof["suggested_target"])
+                return self.send(200, prof)
+            if action == "train":
+                return self.send(200, generic.train(df, body["target"], body.get("use")))
+            return self.send(404, {"error": "unknown action"})
+        except (ValueError, KeyError, pd.errors.ParserError, pd.errors.EmptyDataError) as e:
+            self.send(400, {"error": str(e)})
+        except Exception as e:  # never drop the connection
             self.send(500, {"error": f"unexpected error: {type(e).__name__}: {e}"})
 
     def log_message(self, *a):
