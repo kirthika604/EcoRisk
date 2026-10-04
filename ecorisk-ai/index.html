@@ -720,6 +720,8 @@ function defaultDate(s) {
 }
 function choose(id, run) {
   const s = S.sites.find(x => x.site_id === id); if (!s) return;
+  for (const sid of ["site", "dSite"]) $(sid).querySelector('option[value="__upload"]')?.remove();
+  S.upload = null;
   S.site = id; $("site").value = id; $("date").value = defaultDate(s); $("dSite").value = id; $("dDate").value = $("date").value;
   $("siteName").textContent = s.name;
   const ev = s.disaster_date ? `Recorded ${String(s.disaster_type || "event").replace(/_/g, " ")} on ${s.disaster_date}` : "Control site: no recorded disaster";
@@ -728,7 +730,15 @@ function choose(id, run) {
   if (run) replay();
 }
 async function replay() {
-  $("err").textContent = ""; $("replay").disabled = true;
+  $("err").textContent = "";
+  if (S.upload) {  // an uploaded file is on screen: re-run it (e.g. for a different window)
+    try {
+      const d = await j("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...S.upload.body, horizon: S.h }) });
+      render(d, S.upload.v === "__new" ? null : S.upload.v);
+    } catch (e) { $("err").textContent = friendly(e.message); }
+    return;
+  }
+  $("replay").disabled = true;
   try {
     const csv = await j(`/api/sample?site=${S.site}&end=${$("date").value}&days=60`);
     const d = await j("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ csv, site: S.site, horizon: S.h }) });
@@ -898,6 +908,15 @@ $("run").onclick = async () => {
     const d = await j("/api/predict", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     if (v === "__new") { S.site = null; markSelected(); $("siteName").textContent = "Uploaded record · new location"; $("siteMeta").textContent = `Slope ${body.slope}°, elevation ${body.elevation} m · ${noteSummary(d.notes)}`; }
     else { const s = S.sites.find(x => x.site_id === v); S.site = v; markSelected(); $("site").value = v; $("siteName").textContent = s.name + " · uploaded record"; $("siteMeta").textContent = noteSummary(d.notes); }
+    S.upload = { body, v };  // window changes / Predict re-run this file until a site is chosen again
+    // keep the Location / date controls truthful: they show the uploaded record, not the last replayed site
+    const lastDate = d.rows[d.rows.length - 1].date;
+    $("date").value = lastDate; $("dDate").value = lastDate;
+    for (const id of ["site", "dSite"]) {
+      const sel = $(id); sel.querySelector('option[value="__upload"]')?.remove();
+      if (v === "__new") { const o = new Option("Uploaded file · new location", "__upload"); sel.add(o, 0); sel.value = "__upload"; }
+      else sel.value = v;
+    }
     render(d, v === "__new" ? null : v);
     $("outlook").scrollIntoView({ behavior: "smooth" });
   } catch (e) { $("uErr").textContent = friendly(e.message); }
