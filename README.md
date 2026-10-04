@@ -30,8 +30,8 @@ column to predict, and it does the rest:
 
 **AI4I 2020 predictive maintenance** (UCI, 10,000 machines, 3.4% failures; included as a one-click sample).
 The failure-mode columns TWF/HDF/PWF/OSF/RNF are detected as leakage and excluded, as are UDI and
-Product ID. On 2,000 held-out machines, gradient boosting reaches **PR-AUC 0.891** (baseline 0.034),
-ROC-AUC 0.977, precision 91% and recall 85%: 58 of 68 failures caught with 6 false alarms. Top drivers
+Product ID. On 2,000 held-out machines, gradient boosting reaches **PR-AUC 0.894** (baseline 0.034),
+ROC-AUC 0.978, precision 89% and recall 85%: 58 of 68 failures caught with 7 false alarms. Top drivers
 are rotational speed, temperature difference, strain and power. Also tested on Iris (multiclass),
 Diabetes (regression), Breast cancer (binary with an ID column) and a dated sales file (time split,
 leaky column caught).

@@ -1451,7 +1451,7 @@ $("gNewFile").addEventListener("click", () => { $("gErr2").textContent = ""; });
 $("gTarget").onchange = () => gShowProfile($("gTarget").value, true);
 $("gTrain").onclick = async () => {
   const use = [...document.querySelectorAll('#gCols input[type=checkbox]')].filter(x => x.checked).map(x => decodeURIComponent(x.dataset.c));
-  $("gTrain").disabled = true; $("gBusy").textContent = "Training three models and validating…"; $("gErr").textContent = "";
+  $("gTrain").disabled = true; $("gBusy").textContent = "Training three models and validating (about 15 s on the live server)…"; $("gErr").textContent = "";
   try { G.res = await gpost("train", { csv: G.csv, target: $("gTarget").value, use }); gShowResults(G.res); }
   catch (e) { $("gErr").textContent = friendly(e.message); }
   finally { $("gTrain").disabled = false; $("gBusy").textContent = ""; }
