@@ -178,5 +178,13 @@ if __name__ == "__main__":
     except OSError:
         sys.exit(f"Port {port} is already in use. EcoForecast may already be running at "
                  f"http://localhost:{port}, or pick another port: PORT=8800 python3 ml/ef_server.py")
-    print(f"EcoForecast demo on http://localhost:{port}")
+    # warm up: load all three window models and run one tiny prediction before accepting traffic,
+    # so the first visitor does not wait ~10 s for lazy model loading
+    for h in ef_predict.HORIZONS:
+        ef_predict.load_model(h)
+    try:
+        ef_predict.predict_row(BASE["wayanad|7"], 72)
+    except Exception as e:  # never block startup on the warm-up
+        print("warm-up skipped:", e)
+    print(f"EcoRisk AI on http://localhost:{port}", flush=True)
     srv.serve_forever()
